@@ -32,6 +32,7 @@ export async function addItem({ title, type, uid, name }) {
     addedByName: name,
     assignedUid: null,
     assignedName: null,
+    assignedFamilyId: null, // 'bring' türünde: hangi aile üstlendi (null = havuzda)
     createdAt: serverTimestamp(),
   })
 }
@@ -57,6 +58,7 @@ export async function bulkAdd({ text, type, uid, name }) {
       addedByName: name,
       assignedUid: null,
       assignedName: null,
+      assignedFamilyId: null,
       createdAt: now,
     })
   })
@@ -71,12 +73,22 @@ export async function toggleDone(item, { name }) {
   })
 }
 
-// Üstlen / bırak (aynı kişi tekrar basınca bırakır)
+// Üstlen / bırak (aynı kişi tekrar basınca bırakır) — alışveriş için kişisel
 export async function toggleClaim(item, { uid, name }) {
   const mine = item.assignedUid === uid
   await updateDoc(doc(db, COL, item.id), {
     assignedUid: mine ? null : uid,
     assignedName: mine ? null : name,
+  })
+}
+
+// Getirilecek maddeyi bir aileye ata (havuzdan çek) ya da havuza geri bırak.
+export async function assignFamily(item, familyId) {
+  await updateDoc(doc(db, COL, item.id), {
+    assignedFamilyId: familyId || null,
+    // aile değişince "getirildi" durumunu sıfırla ki karışmasın
+    done: false,
+    doneByName: null,
   })
 }
 
