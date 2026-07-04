@@ -59,6 +59,16 @@ service cloud.firestore {
       allow read, write: if isSignedIn();
     }
 
+    // Vampir Köylü: oyun durumu herkese açık; roller KİŞİYE ÖZEL (herkes sadece kendi rolünü okur).
+    match /vampir/{docId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+      match /roles/{uid} {
+        allow read: if isSignedIn() && request.auth.uid == uid;
+        allow write: if isSignedIn();
+      }
+    }
+
     // İleride eklenecek ortak özellikler (dilek panosu, mesaj, oylama).
     match /wishes/{id} {
       allow read, write: if isSignedIn();

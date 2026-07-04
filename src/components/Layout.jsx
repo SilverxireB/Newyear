@@ -6,7 +6,7 @@ const navItems = [
   { to: '/', label: 'Ana Sayfa', icon: '🏠', end: true },
   { to: '/masraf', label: 'Masraf', icon: '💸' },
   { to: '/liste', label: 'Liste', icon: '🛒' },
-  { to: '/tombala', label: 'Tombala', icon: '🎱' },
+  { to: '/oyunlar', label: 'Oyunlar', icon: '🎮' },
 ]
 
 export default function Layout({ children }) {

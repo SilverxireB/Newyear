@@ -8,7 +8,10 @@ import SelectFamily from './pages/SelectFamily.jsx'
 import Home from './pages/Home.jsx'
 import Expenses from './pages/Expenses.jsx'
 import Liste from './pages/Liste.jsx'
+import Oyunlar from './pages/Oyunlar.jsx'
 import Tombala from './pages/Tombala.jsx'
+import Tabu from './pages/Tabu.jsx'
+import Vampir from './pages/Vampir.jsx'
 import Admin from './pages/Admin.jsx'
 
 export default function App() {
@@ -25,7 +28,10 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/masraf" element={<Expenses />} />
         <Route path="/liste" element={<Liste />} />
+        <Route path="/oyunlar" element={<Oyunlar />} />
         <Route path="/tombala" element={<Tombala />} />
+        <Route path="/tabu" element={<Tabu />} />
+        <Route path="/vampir" element={<Vampir />} />
         <Route path="/yonetim" element={admin ? <Admin /> : <Navigate to="/" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
