@@ -34,12 +34,13 @@ export function subscribeExpenses(cb) {
 }
 
 /**
- * Masrafları 4 aile arasında EŞİT bölerek hesap çıkarır.
+ * Masrafları 4 aile arasında EŞİT bölerek hesap çıkarır; varsa tombala netini de katar.
  * families: [{id, name, color}]
  * expenses: [{amount, familyId}]
- * Döner: { total, share, perFamily: {id -> {paid, balance}}, transfers: [{from, to, amount}] }
+ * tombalaNet: { familyId -> net } (kazanç +, kayıp -). Havuz sıfır toplamlı olduğu için denge korunur.
+ * Döner: { total, share, perFamily: {id -> {paid, expenseBalance, tombalaNet, balance}}, transfers }
  */
-export function computeSettlement(families, expenses) {
+export function computeSettlement(families, expenses, tombalaNet = {}) {
   const n = families.length || 1
   const total = expenses.reduce((s, e) => s + (Number(e.amount) || 0), 0)
   const share = total / n
@@ -56,8 +57,10 @@ export function computeSettlement(families, expenses) {
   const creditors = [] // fazla ödeyen (alacaklı)
   const debtors = [] // az ödeyen (borçlu)
   families.forEach((f) => {
-    const balance = round2((paid[f.id] || 0) - share)
-    perFamily[f.id] = { paid: round2(paid[f.id] || 0), balance }
+    const expenseBalance = round2((paid[f.id] || 0) - share)
+    const tNet = round2(Number(tombalaNet[f.id]) || 0)
+    const balance = round2(expenseBalance + tNet)
+    perFamily[f.id] = { paid: round2(paid[f.id] || 0), expenseBalance, tombalaNet: tNet, balance }
     if (balance > 0.01) creditors.push({ id: f.id, amount: balance })
     else if (balance < -0.01) debtors.push({ id: f.id, amount: -balance })
   })

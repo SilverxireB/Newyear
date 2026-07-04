@@ -19,7 +19,7 @@ export default function Layout({ children }) {
       <header className="pt-safe sticky top-0 z-20 bg-night-950/70 backdrop-blur border-b border-white/10">
         <div className="mx-auto max-w-2xl px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2 font-display font-bold">
-            <span className="text-xl">🎆</span>
+            <img src="/icon-192.png" alt="" className="w-7 h-7 rounded-lg" />
             <span className="gold-text text-lg">Yılbaşı</span>
           </div>
           <div className="flex items-center gap-3">

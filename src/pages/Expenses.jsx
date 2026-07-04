@@ -8,6 +8,7 @@ import {
   formatTL,
   subscribeExpenses,
 } from '../lib/expenses.js'
+import { subscribeLedger, sumLedger } from '../lib/tombala.js'
 
 const CATEGORIES = [
   { id: 'yemek', label: 'Yemek', icon: '🍽️' },
@@ -22,14 +23,17 @@ export default function Expenses() {
   const { user, profile, admin } = useAuth()
   const [families, setFamilies] = useState([])
   const [expenses, setExpenses] = useState([])
+  const [ledger, setLedger] = useState([])
   const [tab, setTab] = useState('liste') // 'liste' | 'hesap'
 
   useEffect(() => {
     const u1 = subscribeFamilies(setFamilies)
     const u2 = subscribeExpenses(setExpenses)
+    const u3 = subscribeLedger(setLedger)
     return () => {
       u1()
       u2()
+      u3()
     }
   }, [])
 
@@ -37,9 +41,11 @@ export default function Expenses() {
     () => Object.fromEntries(families.map((f) => [f.id, f])),
     [families],
   )
+  const tombalaNet = useMemo(() => sumLedger(ledger), [ledger])
+  const hasTombala = ledger.length > 0
   const settlement = useMemo(
-    () => computeSettlement(families, expenses),
-    [families, expenses],
+    () => computeSettlement(families, expenses, tombalaNet),
+    [families, expenses, tombalaNet],
   )
 
   return (
@@ -62,7 +68,7 @@ export default function Expenses() {
           canDelete={(e) => admin || e.paidByUid === user.uid}
         />
       ) : (
-        <Settlement settlement={settlement} familyById={familyById} />
+        <Settlement settlement={settlement} familyById={familyById} hasTombala={hasTombala} />
       )}
     </div>
   )
@@ -209,7 +215,7 @@ function ExpenseList({ expenses, familyById, canDelete }) {
   )
 }
 
-function Settlement({ settlement, familyById }) {
+function Settlement({ settlement, familyById, hasTombala }) {
   const { total, share, transfers, perFamily } = settlement
   return (
     <div className="space-y-4">
@@ -255,32 +261,63 @@ function Settlement({ settlement, familyById }) {
 
       <div className="card p-4">
         <h3 className="font-display font-bold mb-3">Aile bazında</h3>
+        {hasTombala && (
+          <div className="mb-2 grid grid-cols-[1fr_auto_auto_auto] gap-x-3 text-[10px] uppercase tracking-wide text-slate-500">
+            <span>Aile</span>
+            <span className="text-right">Masraf</span>
+            <span className="text-right w-20">Tombala</span>
+            <span className="text-right w-20">Toplam</span>
+          </div>
+        )}
         <ul className="space-y-2">
           {Object.entries(perFamily).map(([id, v]) => {
             const fam = familyById[id]
             return (
-              <li key={id} className="flex items-center gap-2 text-sm">
-                <Dot color={fam?.color} />
-                <span className="flex-1">{fam?.name}</span>
-                <span className="text-slate-400 tabular-nums">ödedi {formatTL(v.paid)}</span>
-                <span
-                  className={`w-24 text-right tabular-nums font-medium ${
-                    v.balance > 0
-                      ? 'text-emerald-400'
-                      : v.balance < 0
-                        ? 'text-rose-400'
-                        : 'text-slate-400'
-                  }`}
-                >
-                  {v.balance === 0 ? 'denk' : formatTL(v.balance)}
+              <li
+                key={id}
+                className={`items-center text-sm ${
+                  hasTombala
+                    ? 'grid grid-cols-[1fr_auto_auto_auto] gap-x-3'
+                    : 'flex gap-2'
+                }`}
+              >
+                <span className="flex items-center gap-2 min-w-0">
+                  <Dot color={fam?.color} />
+                  <span className="truncate">{fam?.name}</span>
                 </span>
+                {hasTombala ? (
+                  <>
+                    <Signed v={v.expenseBalance} className="text-right tabular-nums w-16" />
+                    <Signed v={v.tombalaNet} className="text-right tabular-nums w-20" tombala />
+                    <Signed v={v.balance} className="text-right tabular-nums w-20 font-semibold" />
+                  </>
+                ) : (
+                  <>
+                    <span className="flex-1 text-slate-400 tabular-nums text-right">
+                      ödedi {formatTL(v.paid)}
+                    </span>
+                    <Signed v={v.balance} className="w-24 text-right tabular-nums font-medium" />
+                  </>
+                )}
               </li>
             )
           })}
         </ul>
+        {hasTombala && (
+          <p className="mt-3 text-xs text-slate-500">
+            "Tombala" sütunu oyunlardan gelen kazanç/kayıptır ve toplam borç/alacağa dahildir. 🎱
+          </p>
+        )}
       </div>
     </div>
   )
+}
+
+function Signed({ v, className = '', tombala }) {
+  const color = v > 0.01 ? 'text-emerald-400' : v < -0.01 ? 'text-rose-400' : 'text-slate-400'
+  const txt =
+    Math.abs(v) < 0.01 ? (tombala ? '—' : 'denk') : `${v > 0 ? '+' : ''}${formatTL(v)}`
+  return <span className={`${color} ${className}`}>{txt}</span>
 }
 
 function Dot({ color }) {

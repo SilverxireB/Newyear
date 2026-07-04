@@ -25,7 +25,11 @@ export default function Login() {
     <div className="min-h-[100dvh] grid place-items-center px-4">
       <Fireworks />
       <div className="w-full max-w-sm text-center animate-fade-up">
-        <div className="text-7xl mb-4">🎆</div>
+        <img
+          src="/icon-192.png"
+          alt="Yılbaşı Gecesi"
+          className="w-24 h-24 mx-auto mb-4 rounded-2xl shadow-lg shadow-black/40"
+        />
         <h1 className="font-display text-4xl font-extrabold gold-text leading-tight">
           Yılbaşı Gecesi
         </h1>

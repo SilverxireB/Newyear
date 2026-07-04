@@ -3,25 +3,29 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
 import { subscribeFamilies } from '../lib/families.js'
 import { computeSettlement, formatTL, subscribeExpenses } from '../lib/expenses.js'
+import { subscribeLedger, sumLedger } from '../lib/tombala.js'
 
 export default function Home() {
   const { profile } = useAuth()
   const [families, setFamilies] = useState([])
   const [expenses, setExpenses] = useState([])
+  const [ledger, setLedger] = useState([])
   const countdown = useCountdown()
 
   useEffect(() => {
     const u1 = subscribeFamilies(setFamilies)
     const u2 = subscribeExpenses(setExpenses)
+    const u3 = subscribeLedger(setLedger)
     return () => {
       u1()
       u2()
+      u3()
     }
   }, [])
 
   const settlement = useMemo(
-    () => computeSettlement(families, expenses),
-    [families, expenses],
+    () => computeSettlement(families, expenses, sumLedger(ledger)),
+    [families, expenses, ledger],
   )
   const myFamily = families.find((f) => f.id === profile?.familyId)
   const myBalance = settlement.perFamily[profile?.familyId]?.balance ?? 0

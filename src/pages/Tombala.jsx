@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
+import { subscribeFamilies } from '../lib/families.js'
+import { formatTL } from '../lib/expenses.js'
 import {
   analyzeCard,
   CARD_COLORS,
   claimWin,
   drawNext,
+  finalizeGame,
   makeCard,
   resetGame,
   setMyCard,
@@ -17,13 +20,16 @@ export default function Tombala() {
   const { user, profile, admin } = useAuth()
   const [game, setGame] = useState(undefined)
   const [cards, setCards] = useState([])
+  const [families, setFamilies] = useState([])
 
   useEffect(() => {
     const u1 = subscribeGame(setGame)
     const u2 = subscribeCards(setCards)
+    const u3 = subscribeFamilies(setFamilies)
     return () => {
       u1()
       u2()
+      u3()
     }
   }, [])
 
@@ -40,7 +46,9 @@ export default function Tombala() {
     <div className="space-y-5">
       <Winners game={game} />
 
-      {admin && <HostPanel game={game} user={user} profile={profile} />}
+      {admin && (
+        <HostPanel game={game} user={user} profile={profile} cards={cards} families={families} />
+      )}
 
       {!playing && !admin && (
         <div className="card p-8 text-center">
@@ -64,22 +72,77 @@ export default function Tombala() {
         </>
       )}
 
-      {game?.status === 'finished' && (
-        <div className="card p-6 text-center">
-          <div className="text-5xl mb-2">🏆</div>
-          <h2 className="font-display text-xl font-bold gold-text">Oyun bitti!</h2>
-          <p className="text-slate-300 text-sm mt-1">Yeni oyun için yönetici başlatabilir.</p>
+      {game?.status === 'finished' && <ResultView game={game} families={families} />}
+    </div>
+  )
+}
+
+function ResultView({ game, families }) {
+  const result = game?.result
+  const famById = Object.fromEntries(families.map((f) => [f.id, f]))
+  return (
+    <div className="card p-5">
+      <div className="text-center mb-4">
+        <div className="text-5xl mb-2">🏆</div>
+        <h2 className="font-display text-xl font-bold gold-text">Oyun bitti!</h2>
+        {result?.pot ? (
+          <p className="text-slate-300 text-sm mt-1">Havuz: {formatTL(result.pot)}</p>
+        ) : null}
+      </div>
+
+      {result?.awarded?.length > 0 && (
+        <div className="mb-4">
+          <h3 className="text-sm font-semibold text-slate-300 mb-2">Kazananlar</h3>
+          <ul className="space-y-1.5">
+            {result.awarded.map((a, i) => (
+              <li key={i} className="flex items-center gap-2 text-sm">
+                <span className="text-gold-400">🏅</span>
+                <span className="flex-1">
+                  <b>{a.name}</b> · {a.type}
+                </span>
+                <span className="tabular-nums text-emerald-400">{formatTL(a.amount)}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {result?.perFamily && (
+        <div>
+          <h3 className="text-sm font-semibold text-slate-300 mb-2">Aile başı kâr / zarar</h3>
+          <ul className="space-y-1.5">
+            {Object.entries(result.perFamily).map(([id, net]) => {
+              const fam = famById[id]
+              return (
+                <li key={id} className="flex items-center gap-2 text-sm">
+                  <span className="w-3 h-3 rounded-full" style={{ background: fam?.color }} />
+                  <span className="flex-1">{fam?.name}</span>
+                  <span
+                    className={`tabular-nums font-medium ${
+                      net > 0.01 ? 'text-emerald-400' : net < -0.01 ? 'text-rose-400' : 'text-slate-400'
+                    }`}
+                  >
+                    {Math.abs(net) < 0.01 ? '—' : `${net > 0 ? '+' : ''}${formatTL(net)}`}
+                  </span>
+                </li>
+              )
+            })}
+          </ul>
+          <p className="mt-3 text-xs text-slate-500">
+            Bu sonuç masraf tablosuna eklendi — "Kim Kime Borçlu" hesabına dahil. 🎱
+          </p>
         </div>
       )}
     </div>
   )
 }
 
-function HostPanel({ game, user, profile }) {
+function HostPanel({ game, user, profile, cards, families }) {
   const playing = game?.status === 'playing'
   const [busy, setBusy] = useState(false)
   const [auto, setAuto] = useState(false)
   const [sec, setSec] = useState(5)
+  const [bet, setBet] = useState(200)
 
   const drawnCount = game?.drawn?.length || 0
   const gameRef = useRef(game)
@@ -98,7 +161,22 @@ function HostPanel({ game, user, profile }) {
     setBusy(true)
     setAuto(false)
     try {
-      await startGame({ mode: m, hostUid: user.uid, hostName: profile.name })
+      await startGame({
+        mode: m,
+        hostUid: user.uid,
+        hostName: profile.name,
+        bet: m === 'cards' ? bet : 0,
+      })
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const endAndSettle = async () => {
+    setBusy(true)
+    setAuto(false)
+    try {
+      await finalizeGame({ game: gameRef.current, cards, families })
     } finally {
       setBusy(false)
     }
@@ -108,30 +186,57 @@ function HostPanel({ game, user, profile }) {
     return (
       <div className="card p-4 space-y-3">
         <h2 className="font-display font-bold">🎛️ Oyunu başlat (yönetici)</h2>
+
+        <div>
+          <label className="label">Giriş bahsi (kart başı ₺)</label>
+          <input
+            className="input"
+            inputMode="numeric"
+            value={bet}
+            onChange={(e) => setBet(e.target.value.replace(/[^0-9]/g, ''))}
+            placeholder="200"
+          />
+          <p className="mt-1 text-xs text-slate-500">
+            Havuz = seçilen kart sayısı × bahis. Ödül: 1. çinko %20, 2. çinko %20, tombala %60.
+          </p>
+        </div>
+
         <div className="grid grid-cols-1 gap-2">
           <button onClick={() => begin('cards')} disabled={busy} className="btn-gold py-3">
             🎴 Kartlı Tombala — herkes kendi kartını seçer
           </button>
           <button onClick={() => begin('numbers')} disabled={busy} className="btn-ghost py-3">
-            🔢 Sadece Numara Çek — kart yok, canlı çekiliş
+            🔢 Sadece Numara Çek — kart yok, bahissiz
           </button>
         </div>
         <p className="text-xs text-slate-500">
-          Kartlı modda herkese 3 kart gösterilir, beğendiğini seçer. Numara modunda elindeki fiziki
+          Kartlı modda herkese 6 kart gösterilir, beğendiğini seçer. Numara modunda elindeki fiziki
           kartla oynarsınız, site sadece numara çeker.
         </p>
       </div>
     )
   }
 
+  const cardsMode = game.mode === 'cards'
+  const pot = cardsMode ? (cards.length * (game.bet || 0)) : 0
+
   return (
     <div className="card p-4 space-y-3">
       <div className="flex items-center justify-between">
         <h2 className="font-display font-bold">
-          🎛️ Yönetici · {game.mode === 'cards' ? 'Kartlı' : 'Numara'}
+          🎛️ Yönetici · {cardsMode ? 'Kartlı' : 'Numara'}
         </h2>
         <span className="text-xs text-slate-400">{drawnCount}/90</span>
       </div>
+
+      {cardsMode && (
+        <div className="flex items-center justify-between rounded-xl bg-night-900/60 border border-white/10 p-3 text-sm">
+          <span className="text-slate-300">
+            🎟️ {cards.length} kart · bahis {formatTL(game.bet || 0)}
+          </span>
+          <span className="font-semibold gold-text">Havuz {formatTL(pot)}</span>
+        </div>
+      )}
 
       <div className="flex gap-2">
         <button
@@ -141,9 +246,15 @@ function HostPanel({ game, user, profile }) {
         >
           🎲 Numara Çek
         </button>
-        <button onClick={() => resetGame()} className="btn-ghost px-4">
-          Bitir
-        </button>
+        {cardsMode ? (
+          <button onClick={endAndSettle} disabled={busy} className="btn-ghost px-4">
+            Bitir & hesapla
+          </button>
+        ) : (
+          <button onClick={() => resetGame()} className="btn-ghost px-4">
+            Bitir
+          </button>
+        )}
       </div>
 
       {/* Otomatik çekme */}
@@ -192,14 +303,17 @@ function MyCardArea({ cards, user, profile, drawnSet, game }) {
   return <MyCard card={mine} drawnSet={drawnSet} game={game} profile={profile} uid={user.uid} />
 }
 
+function makeCandidates() {
+  const shuffled = [...CARD_COLORS].sort(() => Math.random() - 0.5)
+  return Array.from({ length: 6 }, (_, i) => ({
+    cells: makeCard(),
+    color: shuffled[i % shuffled.length],
+    cardNo: Math.floor(1 + Math.random() * 999),
+  }))
+}
+
 function CardPicker({ user, profile }) {
-  // 3 aday kart (her biri farklı renk) — bir kez üret
-  const candidates = useState(() =>
-    [0, 1, 2].map((i) => ({
-      cells: makeCard(),
-      color: CARD_COLORS[i % CARD_COLORS.length],
-    })),
-  )[0]
+  const [candidates, setCandidates] = useState(makeCandidates)
   const [busy, setBusy] = useState(false)
 
   const pick = async (cand) => {
@@ -211,6 +325,7 @@ function CardPicker({ user, profile }) {
         familyId: profile.familyId,
         cells: cand.cells,
         color: cand.color,
+        cardNo: cand.cardNo,
       })
     } finally {
       setBusy(false)
@@ -219,17 +334,23 @@ function CardPicker({ user, profile }) {
 
   return (
     <div className="card p-4">
-      <h3 className="font-display font-bold mb-1">🎴 Kartını seç</h3>
-      <p className="text-xs text-slate-400 mb-3">Beğendiğin kartı seç, oyun onunla oynanır.</p>
+      <div className="flex items-center justify-between mb-1">
+        <h3 className="font-display font-bold">🎴 Kartını seç</h3>
+        <button
+          onClick={() => setCandidates(makeCandidates())}
+          className="text-xs text-slate-400 hover:text-slate-100"
+        >
+          🔄 Yeni kartlar
+        </button>
+      </div>
+      <p className="text-xs text-slate-400 mb-3">
+        Beğendiğin kartı seç, oyun onunla oynanır. Beğenmezsen "Yeni kartlar".
+      </p>
       <div className="space-y-4">
         {candidates.map((cand, i) => (
           <div key={i}>
-            <TombalaCard cells={cand.cells} color={cand.color} />
-            <button
-              onClick={() => pick(cand)}
-              disabled={busy}
-              className="btn-gold w-full mt-2 py-2.5"
-            >
+            <TombalaCard cells={cand.cells} color={cand.color} cardNo={cand.cardNo} />
+            <button onClick={() => pick(cand)} disabled={busy} className="btn-gold w-full mt-2 py-2.5">
               Bu kartı seç
             </button>
           </div>
@@ -256,7 +377,7 @@ function MyCard({ card, drawnSet, game, profile, uid }) {
         </span>
       </div>
 
-      <TombalaCard cells={card.cells} color={card.color} drawnSet={drawnSet} />
+      <TombalaCard cells={card.cells} color={card.color} cardNo={card.cardNo} drawnSet={drawnSet} />
 
       <div className="flex gap-2 mt-4">
         <button
@@ -286,17 +407,18 @@ function MyCard({ card, drawnSet, game, profile, uid }) {
 
 /* ---------- Klasik renkli tombala kartı ---------- */
 
-function TombalaCard({ cells, color, drawnSet }) {
+function TombalaCard({ cells, color, cardNo, drawnSet }) {
   return (
     <div
       className="rounded-xl overflow-hidden shadow-lg"
       style={{ border: `5px solid ${color}`, background: '#f7efdb' }}
     >
       <div
-        className="text-center py-1 text-[11px] font-bold tracking-widest text-white"
+        className="flex items-center justify-between px-2 py-1 text-[11px] font-bold tracking-widest text-white"
         style={{ background: color }}
       >
-        TOMBALA
+        <span>TOMBALA</span>
+        {cardNo != null && <span className="opacity-90">No {cardNo}</span>}
       </div>
       <div className="grid grid-rows-3 gap-px bg-black/15 p-px">
         {[0, 1, 2].map((r) => (

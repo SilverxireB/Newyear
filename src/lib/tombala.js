@@ -23,18 +23,93 @@ export function subscribeGame(cb) {
 }
 
 // mode: 'cards' (kartlı klasik) | 'numbers' (sadece numara çekme)
-export async function startGame({ mode, hostUid, hostName }) {
+// bet: kart başı giriş bahsi (kartlı modda)
+export async function startGame({ mode, hostUid, hostName, bet = 0 }) {
   await clearCards()
   await setDoc(GAME(), {
     status: 'playing',
     mode,
+    bet: Number(bet) || 0,
     drawn: [],
     lastNumber: null,
     hostUid,
     hostName,
     winners: { cinko: [], tombala: [] },
+    result: null,
+    gameId: Date.now(),
     startedAt: serverTimestamp(),
   })
+}
+
+// Ödül ağırlıkları: 1. çinko ve 2. çinko az, tombala çok (havuzun tamamı dağılır).
+export const PRIZE_WEIGHTS = { cinko1: 1, cinko2: 1, tombala: 3 }
+
+// Kart sayısı, kazananlar ve bahisten aile başı kâr/zarar hesabı çıkarır.
+export function computePrizes({ cards, winners, bet, families }) {
+  const pot = cards.length * (Number(bet) || 0)
+  const cinko = winners?.cinko || []
+  const tombala = winners?.tombala || []
+
+  const awarded = []
+  if (cinko[0]) awarded.push({ type: '1. çinko', ...cinko[0], weight: PRIZE_WEIGHTS.cinko1 })
+  if (cinko[1]) awarded.push({ type: '2. çinko', ...cinko[1], weight: PRIZE_WEIGHTS.cinko2 })
+  if (tombala[0]) awarded.push({ type: 'tombala', ...tombala[0], weight: PRIZE_WEIGHTS.tombala })
+
+  const totalW = awarded.reduce((s, a) => s + a.weight, 0) || 1
+  awarded.forEach((a) => (a.amount = round2((pot * a.weight) / totalW)))
+
+  // aile başı net = kazanılan ödül - ödenen kart bedeli
+  const perFamily = {}
+  ;(families || []).forEach((f) => (perFamily[f.id] = 0))
+  cards.forEach((c) => {
+    if (c.familyId != null) perFamily[c.familyId] = (perFamily[c.familyId] || 0) - (Number(bet) || 0)
+  })
+  awarded.forEach((a) => {
+    if (a.familyId != null) perFamily[a.familyId] = (perFamily[a.familyId] || 0) + a.amount
+  })
+
+  return { pot: round2(pot), awarded, perFamily }
+}
+
+// Oyunu bitir: aile başı kâr/zararı hesapla, defterine ekle (masraf tablosuna yansısın), oyunu 'finished' yap.
+export async function finalizeGame({ game, cards, families }) {
+  if (!game || game.status !== 'playing') return
+  const result = computePrizes({ cards, winners: game.winners, bet: game.bet || 0, families })
+
+  // Deftere ekle (aynı oyun iki kez eklenmesin)
+  const ledgerRef = doc(db, 'tombala', 'ledger')
+  const snap = await getDoc(ledgerRef)
+  const games = snap.exists() ? snap.data().games || [] : []
+  if (!games.some((g) => g.gameId === game.gameId)) {
+    games.push({
+      gameId: game.gameId || Date.now(),
+      bet: game.bet || 0,
+      pot: result.pot,
+      perFamily: result.perFamily,
+      awarded: result.awarded.map((a) => ({ type: a.type, name: a.name, familyId: a.familyId, amount: a.amount })),
+      at: Date.now(),
+    })
+    await setDoc(ledgerRef, { games }, { merge: true })
+  }
+
+  await updateDoc(GAME(), { status: 'finished', result })
+}
+
+export function subscribeLedger(cb) {
+  return onSnapshot(doc(db, 'tombala', 'ledger'), (snap) => {
+    cb(snap.exists() ? snap.data().games || [] : [])
+  })
+}
+
+// Defterdeki tüm oyunların aile başı netini topla -> { familyId: net }
+export function sumLedger(games) {
+  const out = {}
+  ;(games || []).forEach((g) => {
+    Object.entries(g.perFamily || {}).forEach(([fid, v]) => {
+      out[fid] = round2((out[fid] || 0) + (Number(v) || 0))
+    })
+  })
+  return out
 }
 
 export async function drawNext(game) {
@@ -91,7 +166,7 @@ export function makeCard() {
 export const CARD_COLORS = ['#d84a4a', '#2f7ed8', '#2aa06b', '#e0a11a', '#8b5cf6', '#e05fa0']
 
 // Kişinin seçtiği kartı kaydet.
-export async function setMyCard({ uid, name, familyId, cells, color }) {
+export async function setMyCard({ uid, name, familyId, cells, color, cardNo }) {
   const ref = doc(db, 'tombala', 'current', 'cards', uid)
   await setDoc(ref, {
     uid,
@@ -99,8 +174,13 @@ export async function setMyCard({ uid, name, familyId, cells, color }) {
     familyId: familyId || null,
     cells,
     color: color || CARD_COLORS[0],
+    cardNo: cardNo || Math.floor(1 + Math.random() * 999),
     createdAt: serverTimestamp(),
   })
+}
+
+function round2(n) {
+  return Math.round((n + Number.EPSILON) * 100) / 100
 }
 
 // Kullanıcının kartı yoksa üret ve kaydet; varsa mevcut olanı döndür.

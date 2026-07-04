@@ -100,10 +100,10 @@ function UserRow({ user, families, currentUid, adminCount }) {
     <div className="rounded-xl bg-night-900/50 border border-white/10 p-3 space-y-2">
       <div className="flex items-center gap-2">
         <div className="flex-1 min-w-0">
-          <div className="text-sm font-medium truncate flex items-center gap-1.5">
-            {user.name}
+          <div className="text-sm font-medium flex items-center gap-1.5">
+            <span className="truncate">{user.name}</span>
             {isAdmin && (
-              <span className="text-[10px] bg-gold-500/20 text-gold-300 px-1.5 py-0.5 rounded-full">
+              <span className="shrink-0 text-[10px] bg-gold-500/20 text-gold-300 px-1.5 py-0.5 rounded-full">
                 yönetici
               </span>
             )}
