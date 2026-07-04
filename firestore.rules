@@ -1,0 +1,57 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Yönetici = users dokümanında role == 'admin' olan kişi.
+    // İlk kayıt olan otomatik admin olur; sonrasında admin, Yönetim sayfasından rol verir.
+    function isAdmin() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Kullanıcı profilleri:
+    // - herkes okur
+    // - kişi kendi profilini oluşturur
+    // - kişi kendi profilini güncelleyebilir AMA kendi rolünü değiştiremez (rolü sadece admin değiştirir)
+    match /users/{uid} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.auth.uid == uid;
+      allow update: if isSignedIn() && (
+        isAdmin() ||
+        (request.auth.uid == uid && request.resource.data.role == resource.data.role)
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Aileler: herkes okur; sadece yönetici oluşturur/değiştirir.
+    match /families/{id} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // Masraflar: herkes okur ve ekler; kaydı ekleyen ya da yönetici silebilir/düzenleyebilir.
+    match /expenses/{id} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn()
+        && (resource.data.paidByUid == request.auth.uid || isAdmin());
+    }
+
+    // Tombala: oyun durumu herkese açık (canlı çekiliş + çinko/tombala bildirimi).
+    match /tombala/{docId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+
+      // Kartlar: herkes görebilir; kişi yalnızca kendi kartını yazar.
+      match /cards/{uid} {
+        allow read: if isSignedIn();
+        allow write: if isSignedIn() && request.auth.uid == uid;
+      }
+    }
+  }
+}
