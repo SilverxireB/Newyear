@@ -8,7 +8,7 @@ import {
   formatTL,
   subscribeExpenses,
 } from '../lib/expenses.js'
-import { subscribeLedger, sumLedger } from '../lib/tombala.js'
+import { clearLedger, subscribeLedger, sumLedger } from '../lib/tombala.js'
 
 const CATEGORIES = [
   { id: 'yemek', label: 'Yemek', icon: '🍽️' },
@@ -68,7 +68,12 @@ export default function Expenses() {
           canDelete={(e) => admin || e.paidByUid === user.uid}
         />
       ) : (
-        <Settlement settlement={settlement} familyById={familyById} hasTombala={hasTombala} />
+        <Settlement
+          settlement={settlement}
+          familyById={familyById}
+          hasTombala={hasTombala}
+          admin={admin}
+        />
       )}
     </div>
   )
@@ -215,7 +220,7 @@ function ExpenseList({ expenses, familyById, canDelete }) {
   )
 }
 
-function Settlement({ settlement, familyById, hasTombala }) {
+function Settlement({ settlement, familyById, hasTombala, admin }) {
   const { total, share, transfers, perFamily } = settlement
   return (
     <div className="space-y-4">
@@ -307,6 +312,17 @@ function Settlement({ settlement, familyById, hasTombala }) {
           <p className="mt-3 text-xs text-slate-500">
             "Tombala" sütunu oyunlardan gelen kazanç/kayıptır ve toplam borç/alacağa dahildir. 🎱
           </p>
+        )}
+        {hasTombala && admin && (
+          <button
+            onClick={() => {
+              if (confirm('Tombala kâr/zarar kayıtları silinsin mi? Masraf tablosundan tombala etkisi kalkar.'))
+                clearLedger()
+            }}
+            className="mt-3 text-xs text-slate-500 hover:text-rose-400"
+          >
+            🎱 Tombala kayıtlarını sıfırla
+          </button>
         )}
       </div>
     </div>

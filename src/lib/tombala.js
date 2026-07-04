@@ -55,12 +55,18 @@ export function computePrizes({ cards, winners, bet, families }) {
   if (cinko[1]) awarded.push({ type: '2. çinko', ...cinko[1], weight: PRIZE_WEIGHTS.cinko2 })
   if (tombala[0]) awarded.push({ type: 'tombala', ...tombala[0], weight: PRIZE_WEIGHTS.tombala })
 
-  const totalW = awarded.reduce((s, a) => s + a.weight, 0) || 1
-  awarded.forEach((a) => (a.amount = round2((pot * a.weight) / totalW)))
-
-  // aile başı net = kazanılan ödül - ödenen kart bedeli
   const perFamily = {}
   ;(families || []).forEach((f) => (perFamily[f.id] = 0))
+
+  // Kazanan yoksa oyun geçersiz: kimseden para çıkmaz (havuz iptal). Böylece hesap hep denk kalır.
+  if (awarded.length === 0) {
+    return { pot: 0, awarded: [], perFamily }
+  }
+
+  const totalW = awarded.reduce((s, a) => s + a.weight, 0)
+  awarded.forEach((a) => (a.amount = round2((pot * a.weight) / totalW)))
+
+  // aile başı net = kazanılan ödül - ödenen kart bedeli (toplamı her zaman 0 = denk)
   cards.forEach((c) => {
     if (c.familyId != null) perFamily[c.familyId] = (perFamily[c.familyId] || 0) - (Number(bet) || 0)
   })
@@ -99,6 +105,11 @@ export function subscribeLedger(cb) {
   return onSnapshot(doc(db, 'tombala', 'ledger'), (snap) => {
     cb(snap.exists() ? snap.data().games || [] : [])
   })
+}
+
+// Tombala kayıtlarını (kâr/zarar defteri) sıfırla — masraf tablosundan tombala etkisini kaldırır.
+export async function clearLedger() {
+  await setDoc(doc(db, 'tombala', 'ledger'), { games: [] })
 }
 
 // Defterdeki tüm oyunların aile başı netini topla -> { familyId: net }
