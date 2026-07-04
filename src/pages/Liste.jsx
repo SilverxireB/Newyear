@@ -8,6 +8,7 @@ import {
   toggleClaim,
   toggleDone,
 } from '../lib/list.js'
+import { SHOPPING_TEMPLATE } from '../data/shoppingTemplate.js'
 
 const TABS = [
   { id: 'shopping', label: '🛒 Alışveriş', claim: 'alırım', doneWord: 'alındı' },
@@ -65,7 +66,24 @@ export default function Liste() {
       {list.length === 0 ? (
         <div className="card p-8 text-center text-slate-400">
           <div className="text-4xl mb-2">{tab === 'shopping' ? '🛒' : '🎁'}</div>
-          Liste boş. Yukarıdan madde ekle ya da "Toplu ekle" ile Google Keep listeni yapıştır.
+          Liste boş. Yukarıdan madde ekle ya da "Toplu ekle" ile listeni yapıştır.
+          {tab === 'shopping' && (
+            <div className="mt-4">
+              <button
+                onClick={() =>
+                  bulkAdd({
+                    text: SHOPPING_TEMPLATE.join('\n'),
+                    type: 'shopping',
+                    uid: user.uid,
+                    name: profile.name,
+                  })
+                }
+                className="btn-gold"
+              >
+                🧾 Hazır alışveriş listesini yükle ({SHOPPING_TEMPLATE.length} madde)
+              </button>
+            </div>
+          )}
         </div>
       ) : (
         <ul className="space-y-2">

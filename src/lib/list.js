@@ -40,7 +40,8 @@ export async function addItem({ title, type, uid, name }) {
 export async function bulkAdd({ text, type, uid, name }) {
   const lines = text
     .split('\n')
-    .map((l) => l.replace(/^[-*•\d.\s\[\]xX]+/, '').trim()) // baştaki -, •, 1., [ ] gibi işaretleri temizle
+    // Sadece baştaki madde işareti / kutucuk işaretlerini temizle (miktarları bozma: "2 Adet", "0,5 Kg" korunur)
+    .map((l) => l.replace(/^\s*(?:[-*•‣·]\s+|\[[ xX]?\]\s*|[☐☑✓✔]\s*)/, '').trim())
     .filter((l) => l.length > 0)
   if (lines.length === 0) return 0
   const batch = writeBatch(db)
