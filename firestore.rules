@@ -53,5 +53,21 @@ service cloud.firestore {
         allow write: if isSignedIn() && request.auth.uid == uid;
       }
     }
+
+    // Ortak liste (alışveriş + kim ne getiriyor): giriş yapan herkes okur/yazar.
+    match /listitems/{id} {
+      allow read, write: if isSignedIn();
+    }
+
+    // İleride eklenecek ortak özellikler (dilek panosu, mesaj, oylama).
+    match /wishes/{id} {
+      allow read, write: if isSignedIn();
+    }
+    match /messages/{id} {
+      allow read, write: if isSignedIn();
+    }
+    match /polls/{id} {
+      allow read, write: if isSignedIn();
+    }
   }
 }

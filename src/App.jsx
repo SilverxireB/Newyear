@@ -7,6 +7,7 @@ import Login from './pages/Login.jsx'
 import SelectFamily from './pages/SelectFamily.jsx'
 import Home from './pages/Home.jsx'
 import Expenses from './pages/Expenses.jsx'
+import Liste from './pages/Liste.jsx'
 import Tombala from './pages/Tombala.jsx'
 import Admin from './pages/Admin.jsx'
 
@@ -23,6 +24,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/masraf" element={<Expenses />} />
+        <Route path="/liste" element={<Liste />} />
         <Route path="/tombala" element={<Tombala />} />
         <Route path="/yonetim" element={admin ? <Admin /> : <Navigate to="/" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />

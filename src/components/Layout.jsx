@@ -5,6 +5,7 @@ import Fireworks from './Fireworks.jsx'
 const navItems = [
   { to: '/', label: 'Ana Sayfa', icon: '🏠', end: true },
   { to: '/masraf', label: 'Masraf', icon: '💸' },
+  { to: '/liste', label: 'Liste', icon: '🛒' },
   { to: '/tombala', label: 'Tombala', icon: '🎱' },
 ]
 
@@ -22,6 +23,17 @@ export default function Layout({ children }) {
             <span className="gold-text text-lg">Yılbaşı</span>
           </div>
           <div className="flex items-center gap-3">
+            {admin && (
+              <NavLink
+                to="/yonetim"
+                className={({ isActive }) =>
+                  `text-lg ${isActive ? 'text-gold-400' : 'text-slate-400 hover:text-slate-100'}`
+                }
+                aria-label="Yönetim"
+              >
+                ⚙️
+              </NavLink>
+            )}
             <span className="hidden sm:block text-sm text-slate-300 max-w-[10rem] truncate">
               {profile?.name}
             </span>
@@ -51,12 +63,6 @@ export default function Layout({ children }) {
           {navItems.map((item) => (
             <NavItem key={item.to} {...item} />
           ))}
-          <NavItem
-            to="/yonetim"
-            label="Yönetim"
-            icon="⚙️"
-            className={admin ? '' : 'invisible pointer-events-none'}
-          />
         </div>
       </nav>
     </div>
