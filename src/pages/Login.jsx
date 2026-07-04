@@ -27,11 +27,11 @@ export default function Login() {
       <div className="w-full max-w-sm text-center animate-fade-up">
         <img
           src="/icon-192.png"
-          alt="Yılbaşı Gecesi"
+          alt="Newyear Traitors"
           className="w-24 h-24 mx-auto mb-4 rounded-2xl shadow-lg shadow-black/40"
         />
         <h1 className="font-display text-4xl font-extrabold gold-text leading-tight">
-          Yılbaşı Gecesi
+          Newyear Traitors
         </h1>
         <p className="mt-3 text-slate-300">
           Ailece kutlama: masrafları paylaş, tombala oyna, keyfine bak. 🥂

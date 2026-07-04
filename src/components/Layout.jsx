@@ -20,7 +20,7 @@ export default function Layout({ children }) {
         <div className="mx-auto max-w-2xl px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2 font-display font-bold">
             <img src="/icon-192.png" alt="" className="w-7 h-7 rounded-lg" />
-            <span className="gold-text text-lg">Yılbaşı</span>
+            <span className="gold-text text-lg">Newyear Traitors</span>
           </div>
           <div className="flex items-center gap-3">
             {admin && (
