@@ -7,7 +7,6 @@ import {
   bulkAdd,
   removeItem,
   subscribeList,
-  toggleClaim,
   toggleDone,
 } from '../lib/list.js'
 import { SHOPPING_TEMPLATE } from '../data/shoppingTemplate.js'
@@ -63,13 +62,14 @@ export default function Liste() {
 
 function ShoppingView({ items, user, profile }) {
   const list = useMemo(() => items.filter((i) => i.type === 'shopping'), [items])
+  const [onlyLeft, setOnlyLeft] = useState(false)
   const doneCount = list.filter((i) => i.done).length
+  const left = list.length - doneCount
+  const shown = onlyLeft ? list.filter((i) => !i.done) : list
 
   return (
     <div className="space-y-4">
       <AddBar type="shopping" user={user} profile={profile} />
-
-      {list.length > 0 && <Progress done={doneCount} total={list.length} />}
 
       {list.length === 0 ? (
         <div className="card p-8 text-center text-slate-400">
@@ -92,42 +92,74 @@ function ShoppingView({ items, user, profile }) {
           </div>
         </div>
       ) : (
-        <ul className="space-y-2">
-          {list.map((item) => (
-            <ShoppingRow key={item.id} item={item} user={user} profile={profile} />
-          ))}
-        </ul>
+        <>
+          {/* Özet: kaç kaldı */}
+          <div className="card p-4">
+            <div className="flex items-end justify-between mb-2">
+              <div>
+                <div className="text-xs text-slate-400">Kalan</div>
+                <div className="font-display text-3xl font-bold gold-text tabular-nums">
+                  {left}
+                </div>
+              </div>
+              <div className="text-right text-sm text-slate-400">
+                {doneCount}/{list.length} alındı
+              </div>
+            </div>
+            <Progress done={doneCount} total={list.length} />
+          </div>
+
+          {/* Markette işe yarar: sadece kalanları göster */}
+          <button
+            onClick={() => setOnlyLeft((v) => !v)}
+            className={`w-full rounded-xl px-3 py-2.5 text-sm font-semibold border transition ${
+              onlyLeft
+                ? 'bg-gold-500/20 text-gold-200 border-gold-400/40'
+                : 'bg-white/5 text-slate-300 border-white/10'
+            }`}
+          >
+            {onlyLeft ? '👁️ Hepsini göster' : '🛒 Sadece kalanları göster'}
+          </button>
+
+          {shown.length === 0 ? (
+            <div className="card p-8 text-center text-emerald-300">
+              <div className="text-4xl mb-2">🎉</div>
+              Her şey alındı, liste tamam!
+            </div>
+          ) : (
+            <ul className="space-y-2">
+              {shown.map((item) => (
+                <ShoppingRow key={item.id} item={item} profile={profile} />
+              ))}
+            </ul>
+          )}
+        </>
       )}
     </div>
   )
 }
 
-function ShoppingRow({ item, user, profile }) {
-  const mine = item.assignedUid === user.uid
+function ShoppingRow({ item, profile }) {
   return (
-    <li className={`card p-3 flex items-center gap-3 ${item.done ? 'opacity-60' : ''}`}>
+    <li
+      onClick={() => toggleDone(item, { name: profile.name })}
+      className={`card p-3.5 flex items-center gap-3 cursor-pointer active:scale-[0.99] transition ${
+        item.done ? 'opacity-55' : ''
+      }`}
+    >
       <CheckButton done={item.done} onClick={() => toggleDone(item, { name: profile.name })} />
       <div className="flex-1 min-w-0">
-        <div className={`font-medium truncate ${item.done ? 'line-through' : ''}`}>
-          {item.title}
-        </div>
-        <div className="text-xs text-slate-400 truncate">
-          {item.done && item.doneByName
-            ? `alındı · ${item.doneByName}`
-            : item.assignedName
-              ? `${item.assignedName} alıyor`
-              : 'kim alacak?'}
-        </div>
+        <div className={`font-medium ${item.done ? 'line-through' : ''}`}>{item.title}</div>
+        {item.done && item.doneByName && (
+          <div className="text-xs text-slate-400 truncate">aldı: {item.doneByName}</div>
+        )}
       </div>
-      <button
-        onClick={() => toggleClaim(item, { uid: user.uid, name: profile.name })}
-        className={`shrink-0 text-xs px-2.5 py-1.5 rounded-lg border transition ${
-          mine ? 'border-gold-400/50 bg-gold-500/15 text-gold-200' : 'border-white/10 text-slate-300'
-        }`}
-      >
-        {mine ? '✓ ben' : 'ben alırım'}
-      </button>
-      <DeleteX onClick={() => removeItem(item.id)} />
+      <DeleteX
+        onClick={(e) => {
+          e.stopPropagation()
+          removeItem(item.id)
+        }}
+      />
     </li>
   )
 }
@@ -371,7 +403,10 @@ function Progress({ done, total }) {
 function CheckButton({ done, onClick }) {
   return (
     <button
-      onClick={onClick}
+      onClick={(e) => {
+        e.stopPropagation()
+        onClick()
+      }}
       className={`shrink-0 w-7 h-7 rounded-lg border grid place-items-center transition ${
         done ? 'bg-emerald-500 border-emerald-500 text-night-950' : 'border-white/20 text-transparent'
       }`}
@@ -385,7 +420,10 @@ function CheckButton({ done, onClick }) {
 function DeleteX({ onClick }) {
   return (
     <button
-      onClick={onClick}
+      onClick={(e) => {
+        e.stopPropagation()
+        onClick(e)
+      }}
       className="shrink-0 text-slate-500 hover:text-rose-400 text-lg leading-none px-1"
       aria-label="sil"
     >

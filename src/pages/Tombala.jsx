@@ -1,11 +1,13 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
 import {
   analyzeCard,
+  CARD_COLORS,
   claimWin,
   drawNext,
-  ensureCard,
+  makeCard,
   resetGame,
+  setMyCard,
   startGame,
   subscribeCards,
   subscribeGame,
@@ -13,7 +15,7 @@ import {
 
 export default function Tombala() {
   const { user, profile, admin } = useAuth()
-  const [game, setGame] = useState(undefined) // undefined=yükleniyor, null=hiç oyun yok
+  const [game, setGame] = useState(undefined)
   const [cards, setCards] = useState([])
 
   useEffect(() => {
@@ -25,20 +27,12 @@ export default function Tombala() {
     }
   }, [])
 
-  const playing = game?.status === 'playing'
-  const mode = game?.mode
-
-  // Kartlı modda oyuncu için kart oluştur.
-  useEffect(() => {
-    if (playing && mode === 'cards' && profile?.familyId) {
-      ensureCard({ uid: user.uid, name: profile.name, familyId: profile.familyId }).catch(() => {})
-    }
-  }, [playing, mode, user?.uid, profile?.familyId, profile?.name])
-
   if (game === undefined) {
     return <div className="text-center text-slate-400 py-10">Tombala yükleniyor…</div>
   }
 
+  const playing = game?.status === 'playing'
+  const mode = game?.mode
   const drawn = game?.drawn || []
   const drawnSet = new Set(drawn)
 
@@ -64,13 +58,7 @@ export default function Tombala() {
           {mode === 'numbers' ? (
             <NumberBoard drawnSet={drawnSet} />
           ) : (
-            <MyCard
-              cards={cards}
-              uid={user.uid}
-              drawnSet={drawnSet}
-              game={game}
-              profile={profile}
-            />
+            <MyCardArea cards={cards} user={user} profile={profile} drawnSet={drawnSet} game={game} />
           )}
           <DrawnStrip drawn={drawn} />
         </>
@@ -90,20 +78,27 @@ export default function Tombala() {
 function HostPanel({ game, user, profile }) {
   const playing = game?.status === 'playing'
   const [busy, setBusy] = useState(false)
-  const [mode, setMode] = useState('cards')
+  const [auto, setAuto] = useState(false)
+  const [sec, setSec] = useState(5)
+
+  const drawnCount = game?.drawn?.length || 0
+  const gameRef = useRef(game)
+  gameRef.current = game
+
+  // Otomatik çekme: her çekişten sonra 'sec' saniye bekleyip yenisini çeker.
+  useEffect(() => {
+    if (!auto || !playing || drawnCount >= 90) return
+    const t = setTimeout(() => {
+      drawNext(gameRef.current)
+    }, sec * 1000)
+    return () => clearTimeout(t)
+  }, [auto, playing, drawnCount, sec])
 
   const begin = async (m) => {
     setBusy(true)
+    setAuto(false)
     try {
       await startGame({ mode: m, hostUid: user.uid, hostName: profile.name })
-    } finally {
-      setBusy(false)
-    }
-  }
-  const draw = async () => {
-    setBusy(true)
-    try {
-      await drawNext(game)
     } finally {
       setBusy(false)
     }
@@ -114,52 +109,248 @@ function HostPanel({ game, user, profile }) {
       <div className="card p-4 space-y-3">
         <h2 className="font-display font-bold">🎛️ Oyunu başlat (yönetici)</h2>
         <div className="grid grid-cols-1 gap-2">
-          <button
-            onClick={() => begin('cards')}
-            disabled={busy}
-            className="btn-gold py-3"
-          >
-            🎴 Kartlı Tombala — herkese kart dağıt
+          <button onClick={() => begin('cards')} disabled={busy} className="btn-gold py-3">
+            🎴 Kartlı Tombala — herkes kendi kartını seçer
           </button>
-          <button
-            onClick={() => begin('numbers')}
-            disabled={busy}
-            className="btn-ghost py-3"
-          >
+          <button onClick={() => begin('numbers')} disabled={busy} className="btn-ghost py-3">
             🔢 Sadece Numara Çek — kart yok, canlı çekiliş
           </button>
         </div>
         <p className="text-xs text-slate-500">
-          Kartlı modda herkese otomatik tombala kartı gelir. Numara modunda elindeki fiziki kartla
-          oynarsınız, site sadece numara çeker.
+          Kartlı modda herkese 3 kart gösterilir, beğendiğini seçer. Numara modunda elindeki fiziki
+          kartla oynarsınız, site sadece numara çeker.
         </p>
       </div>
     )
   }
 
-  const drawnCount = game.drawn?.length || 0
   return (
     <div className="card p-4 space-y-3">
       <div className="flex items-center justify-between">
         <h2 className="font-display font-bold">
           🎛️ Yönetici · {game.mode === 'cards' ? 'Kartlı' : 'Numara'}
         </h2>
-        <span className="text-xs text-slate-400">{drawnCount}/90 çekildi</span>
+        <span className="text-xs text-slate-400">{drawnCount}/90</span>
       </div>
+
       <div className="flex gap-2">
-        <button onClick={draw} disabled={busy || drawnCount >= 90} className="btn-gold flex-1 py-3">
+        <button
+          onClick={() => drawNext(gameRef.current)}
+          disabled={busy || drawnCount >= 90 || auto}
+          className="btn-gold flex-1 py-3"
+        >
           🎲 Numara Çek
         </button>
+        <button onClick={() => resetGame()} className="btn-ghost px-4">
+          Bitir
+        </button>
+      </div>
+
+      {/* Otomatik çekme */}
+      <div className="rounded-xl bg-night-900/60 border border-white/10 p-3">
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium">🔁 Otomatik çek</span>
+          <button
+            onClick={() => setAuto((v) => !v)}
+            className={`relative w-12 h-6 rounded-full transition ${auto ? 'bg-gold-500' : 'bg-white/15'}`}
+            aria-label="otomatik çek"
+          >
+            <span
+              className={`absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all ${
+                auto ? 'left-6' : 'left-0.5'
+              }`}
+            />
+          </button>
+        </div>
+        <div className="mt-2 flex items-center gap-2">
+          <span className="text-xs text-slate-400">Aralık:</span>
+          {[3, 5, 10].map((s) => (
+            <button
+              key={s}
+              onClick={() => setSec(s)}
+              className={`text-xs px-2.5 py-1 rounded-lg border transition ${
+                sec === s
+                  ? 'border-gold-400/50 bg-gold-500/15 text-gold-200'
+                  : 'border-white/10 text-slate-300'
+              }`}
+            >
+              {s} sn
+            </button>
+          ))}
+          {auto && <span className="text-xs text-gold-300 ml-auto animate-pulse">çekiliyor…</span>}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ---------- Kart alanı: seçim ya da kartın ---------- */
+
+function MyCardArea({ cards, user, profile, drawnSet, game }) {
+  const mine = cards.find((c) => c.id === user.uid)
+  if (!mine) return <CardPicker user={user} profile={profile} />
+  return <MyCard card={mine} drawnSet={drawnSet} game={game} profile={profile} uid={user.uid} />
+}
+
+function CardPicker({ user, profile }) {
+  // 3 aday kart (her biri farklı renk) — bir kez üret
+  const candidates = useState(() =>
+    [0, 1, 2].map((i) => ({
+      cells: makeCard(),
+      color: CARD_COLORS[i % CARD_COLORS.length],
+    })),
+  )[0]
+  const [busy, setBusy] = useState(false)
+
+  const pick = async (cand) => {
+    setBusy(true)
+    try {
+      await setMyCard({
+        uid: user.uid,
+        name: profile.name,
+        familyId: profile.familyId,
+        cells: cand.cells,
+        color: cand.color,
+      })
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="card p-4">
+      <h3 className="font-display font-bold mb-1">🎴 Kartını seç</h3>
+      <p className="text-xs text-slate-400 mb-3">Beğendiğin kartı seç, oyun onunla oynanır.</p>
+      <div className="space-y-4">
+        {candidates.map((cand, i) => (
+          <div key={i}>
+            <TombalaCard cells={cand.cells} color={cand.color} />
+            <button
+              onClick={() => pick(cand)}
+              disabled={busy}
+              className="btn-gold w-full mt-2 py-2.5"
+            >
+              Bu kartı seç
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function MyCard({ card, drawnSet, game, profile, uid }) {
+  const analysis = useMemo(() => analyzeCard(card.cells, drawnSet), [card.cells, drawnSet])
+  const alreadyCinko = (game.winners?.cinko || []).some((w) => w.uid === uid)
+  const alreadyTombala = (game.winners?.tombala || []).some((w) => w.uid === uid)
+
+  const claim = (type) =>
+    claimWin(type, { uid, name: profile.name, familyId: profile.familyId }).catch(() => {})
+
+  return (
+    <div className="card p-4">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="font-display font-bold">🎴 Kartın</h3>
+        <span className="text-xs text-slate-400">
+          {analysis.marked}/{analysis.total} işaretli
+        </span>
+      </div>
+
+      <TombalaCard cells={card.cells} color={card.color} drawnSet={drawnSet} />
+
+      <div className="flex gap-2 mt-4">
         <button
-          onClick={() => resetGame()}
-          className="btn-ghost px-4"
+          onClick={() => claim('cinko')}
+          disabled={!analysis.cinko || alreadyCinko}
+          className={`flex-1 py-2.5 rounded-xl font-semibold transition ${
+            analysis.cinko && !alreadyCinko
+              ? 'bg-emerald-500 text-night-950 animate-pop'
+              : 'bg-white/5 text-slate-500'
+          }`}
         >
-          Bitir / Sıfırla
+          {alreadyCinko ? '✓ Çinko' : '🎉 Çinko!'}
+        </button>
+        <button
+          onClick={() => claim('tombala')}
+          disabled={!analysis.tombala || alreadyTombala}
+          className={`flex-1 py-2.5 rounded-xl font-semibold transition ${
+            analysis.tombala && !alreadyTombala ? 'btn-gold' : 'bg-white/5 text-slate-500'
+          }`}
+        >
+          {alreadyTombala ? '✓ Tombala' : '🏆 Tombala!'}
         </button>
       </div>
     </div>
   )
 }
+
+/* ---------- Klasik renkli tombala kartı ---------- */
+
+function TombalaCard({ cells, color, drawnSet }) {
+  return (
+    <div
+      className="rounded-xl overflow-hidden shadow-lg"
+      style={{ border: `5px solid ${color}`, background: '#f7efdb' }}
+    >
+      <div
+        className="text-center py-1 text-[11px] font-bold tracking-widest text-white"
+        style={{ background: color }}
+      >
+        TOMBALA
+      </div>
+      <div className="grid grid-rows-3 gap-px bg-black/15 p-px">
+        {[0, 1, 2].map((r) => (
+          <div key={r} className="grid grid-cols-9 gap-px">
+            {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((c) => {
+              const v = cells[r * 9 + c]
+              if (v == null) {
+                return (
+                  <span
+                    key={c}
+                    className="aspect-square"
+                    style={{ background: hexA(color, 0.14) }}
+                  />
+                )
+              }
+              const on = drawnSet?.has(v)
+              return (
+                <span
+                  key={c}
+                  className="relative aspect-square grid place-items-center bg-[#fdf8ec]"
+                >
+                  <span
+                    className={`font-display font-bold tabular-nums text-[3.4vw] sm:text-base ${
+                      on ? 'text-[#7a2a1a]' : 'text-[#2b2115]'
+                    }`}
+                  >
+                    {v}
+                  </span>
+                  {on && (
+                    <span
+                      className="absolute inset-[12%] rounded-full animate-pop"
+                      style={{ background: hexA('#d8332a', 0.42), border: '2px solid #d8332a' }}
+                    />
+                  )}
+                </span>
+              )
+            })}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// hex + alpha -> rgba string
+function hexA(hex, a) {
+  const h = hex.replace('#', '')
+  const r = parseInt(h.substring(0, 2), 16)
+  const g = parseInt(h.substring(2, 4), 16)
+  const b = parseInt(h.substring(4, 6), 16)
+  return `rgba(${r},${g},${b},${a})`
+}
+
+/* ---------- Ortak parçalar ---------- */
 
 function Winners({ game }) {
   const cinko = game?.winners?.cinko || []
@@ -251,90 +442,6 @@ function NumberBoard({ drawnSet }) {
             </span>
           )
         })}
-      </div>
-    </div>
-  )
-}
-
-function MyCard({ cards, uid, drawnSet, game, profile }) {
-  const mine = cards.find((c) => c.id === uid)
-  const analysis = useMemo(
-    () => (mine ? analyzeCard(mine.cells, drawnSet) : null),
-    [mine, drawnSet],
-  )
-
-  const alreadyCinko = (game.winners?.cinko || []).some((w) => w.uid === uid)
-  const alreadyTombala = (game.winners?.tombala || []).some((w) => w.uid === uid)
-
-  if (!mine) {
-    return (
-      <div className="card p-6 text-center text-slate-400">
-        <div className="text-3xl mb-2">🎴</div>
-        Kartın hazırlanıyor…
-      </div>
-    )
-  }
-
-  const claim = (type) =>
-    claimWin(type, { uid, name: profile.name, familyId: profile.familyId }).catch(() => {})
-
-  return (
-    <div className="card p-4">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="font-display font-bold">🎴 Kartın</h3>
-        <span className="text-xs text-slate-400">
-          {analysis.marked}/{analysis.total} işaretli
-        </span>
-      </div>
-
-      <div className="grid grid-rows-3 gap-1.5">
-        {[0, 1, 2].map((r) => (
-          <div key={r} className="grid grid-cols-9 gap-1.5">
-            {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((c) => {
-              const v = mine.cells[r * 9 + c]
-              if (v == null)
-                return <span key={c} className="aspect-square rounded-md bg-white/5" />
-              const on = drawnSet.has(v)
-              return (
-                <span
-                  key={c}
-                  className={`aspect-square rounded-md grid place-items-center text-xs sm:text-base font-semibold tabular-nums transition ${
-                    on
-                      ? 'bg-gradient-to-b from-gold-400 to-gold-600 text-night-950 animate-pop'
-                      : 'bg-night-900/80 text-slate-200 border border-white/10'
-                  }`}
-                >
-                  {v}
-                </span>
-              )
-            })}
-          </div>
-        ))}
-      </div>
-
-      <div className="flex gap-2 mt-4">
-        <button
-          onClick={() => claim('cinko')}
-          disabled={!analysis.cinko || alreadyCinko}
-          className={`flex-1 py-2.5 rounded-xl font-semibold transition ${
-            analysis.cinko && !alreadyCinko
-              ? 'bg-emerald-500 text-night-950 animate-pop'
-              : 'bg-white/5 text-slate-500'
-          }`}
-        >
-          {alreadyCinko ? '✓ Çinko' : '🎉 Çinko!'}
-        </button>
-        <button
-          onClick={() => claim('tombala')}
-          disabled={!analysis.tombala || alreadyTombala}
-          className={`flex-1 py-2.5 rounded-xl font-semibold transition ${
-            analysis.tombala && !alreadyTombala
-              ? 'btn-gold'
-              : 'bg-white/5 text-slate-500'
-          }`}
-        >
-          {alreadyTombala ? '✓ Tombala' : '🏆 Tombala!'}
-        </button>
       </div>
     </div>
   )

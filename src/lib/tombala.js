@@ -82,6 +82,27 @@ export function subscribeCards(cb) {
   )
 }
 
+// Yeni bir kart üret (henüz kaydetmez) — kart seçimi için aday üretmekte kullanılır.
+export function makeCard() {
+  return generateCardCells()
+}
+
+// Klasik tombala kartı renkleri (kutudan çıkan renkli kartlar gibi).
+export const CARD_COLORS = ['#d84a4a', '#2f7ed8', '#2aa06b', '#e0a11a', '#8b5cf6', '#e05fa0']
+
+// Kişinin seçtiği kartı kaydet.
+export async function setMyCard({ uid, name, familyId, cells, color }) {
+  const ref = doc(db, 'tombala', 'current', 'cards', uid)
+  await setDoc(ref, {
+    uid,
+    name,
+    familyId: familyId || null,
+    cells,
+    color: color || CARD_COLORS[0],
+    createdAt: serverTimestamp(),
+  })
+}
+
 // Kullanıcının kartı yoksa üret ve kaydet; varsa mevcut olanı döndür.
 export async function ensureCard({ uid, name, familyId }) {
   const ref = doc(db, 'tombala', 'current', 'cards', uid)
