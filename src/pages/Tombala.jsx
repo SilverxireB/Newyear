@@ -62,6 +62,7 @@ export default function Tombala() {
 
       {playing && (
         <>
+          <GameInfo game={game} cards={cards} />
           <LastNumber game={game} />
           {mode === 'numbers' ? (
             <NumberBoard drawnSet={drawnSet} />
@@ -248,7 +249,7 @@ function HostPanel({ game, user, profile, cards, families }) {
         </button>
         {cardsMode ? (
           <button onClick={endAndSettle} disabled={busy} className="btn-ghost px-4">
-            Bitir & hesapla
+            Bitir & masrafa ekle
           </button>
         ) : (
           <button onClick={() => resetGame()} className="btn-ghost px-4">
@@ -502,6 +503,20 @@ function Banner({ tone, children }) {
   return (
     <div className={`rounded-xl border bg-gradient-to-r p-3 text-sm text-center animate-pop ${cls}`}>
       {children}
+    </div>
+  )
+}
+
+function GameInfo({ game, cards }) {
+  if (game.mode !== 'cards') return null
+  const pot = cards.length * (game.bet || 0)
+  return (
+    <div className="card p-3 flex items-center justify-between text-sm">
+      <span className="flex items-center gap-2">
+        <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+        Oyun açık · {cards.length} kart · bahis {formatTL(game.bet || 0)}
+      </span>
+      {game.bet ? <span className="font-semibold gold-text">Havuz {formatTL(pot)}</span> : null}
     </div>
   )
 }
