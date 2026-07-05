@@ -7,6 +7,7 @@ import {
   orderBy,
   query,
   serverTimestamp,
+  setDoc,
 } from 'firebase/firestore'
 import { db } from '../firebase'
 
@@ -15,8 +16,8 @@ export function subscribePhotos(cb) {
   return onSnapshot(q, (snap) => cb(snap.docs.map((d) => ({ id: d.id, ...d.data() }))))
 }
 
-export async function addPhoto({ publicId, url, width, height, uid, name, familyId }) {
-  await addDoc(collection(db, 'photos'), {
+export async function addPhoto({ id, publicId, url, width, height, uid, name, familyId }) {
+  const data = {
     publicId,
     url,
     width: width || null,
@@ -25,7 +26,10 @@ export async function addPhoto({ publicId, url, width, height, uid, name, family
     uploaderName: name,
     familyId: familyId || null,
     createdAt: serverTimestamp(),
-  })
+  }
+  // Bilinen id -> yükleme önizlemesini gerçek foto ile pürüzsüz eşleştirmek için.
+  if (id) await setDoc(doc(db, 'photos', id), data)
+  else await addDoc(collection(db, 'photos'), data)
 }
 
 export async function deletePhoto(id) {

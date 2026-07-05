@@ -1,19 +1,22 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
 import { cldUrl, isCloudinaryConfigured, triggerDownload, uploadToCloudinary } from '../cloudinary.js'
 import { addPhoto, deletePhoto, subscribePhotos } from '../lib/photos.js'
 
+const rid = () =>
+  (crypto?.randomUUID?.() || String(Date.now()) + Math.random().toString(36).slice(2))
+
 export default function Album() {
   const { user, profile, admin } = useAuth()
   const [photos, setPhotos] = useState([])
-  const [pending, setPending] = useState([]) // yükleniyor önizlemeleri: {id,url}
+  const [pending, setPending] = useState([]) // {id,url} yükleniyor
+  const [localPrev, setLocalPrev] = useState({}) // id -> blobURL (pürüzsüz geçiş için)
+  const [prog, setProg] = useState({ done: 0, total: 0 })
   const [viewer, setViewer] = useState(null)
   const [selectMode, setSelectMode] = useState(false)
   const [selected, setSelected] = useState(() => new Set())
   const inputRef = useRef(null)
-  const pidc = useRef(0)
 
-  // seçim/sürükleme refleri
   const selectedRef = useRef(selected); selectedRef.current = selected
   const selectModeRef = useRef(selectMode); selectModeRef.current = selectMode
   const suppress = useRef(false)
@@ -24,7 +27,13 @@ export default function Album() {
 
   useEffect(() => subscribePhotos(setPhotos), [])
 
-  // Yana sürükleyerek boya-seç (yatay hareket = seç; dikey = normal kaydır).
+  const photoIds = useMemo(() => new Set(photos.map((p) => p.id)), [photos])
+
+  // Gerçek foto gelince (subscription) ilgili "pending" önizlemeyi temizle — çift/boşluk olmasın.
+  useEffect(() => {
+    setPending((p) => p.filter((x) => !photoIds.has(x.id)))
+  }, [photoIds])
+
   const onGridMove = useCallback((e) => {
     if (!selectModeRef.current) return
     const t = e.touches[0]
@@ -39,15 +48,11 @@ export default function Album() {
       const under = document.elementFromPoint(t.clientX, t.clientY)
       const pid = under?.closest('[data-pid]')?.dataset.pid
       if (pid && !selectedRef.current.has(pid)) {
-        const n = new Set(selectedRef.current)
-        n.add(pid)
-        selectedRef.current = n
-        setSelected(n)
+        const n = new Set(selectedRef.current); n.add(pid); selectedRef.current = n; setSelected(n)
       }
     }
   }, [])
 
-  // Grid mount olunca native (passive olmayan) dinleyiciyi bağla — önceki hata buydu.
   const setGrid = useCallback((el) => {
     if (gridEl.current) gridEl.current.removeEventListener('touchmove', onGridMove)
     gridEl.current = el
@@ -64,51 +69,56 @@ export default function Album() {
     )
   }
 
-  const uploadOne = async (blob, localUrl) => {
-    const id = 'pend' + pidc.current++
+  const uploadOne = async (file) => {
+    const id = rid()
+    const localUrl = URL.createObjectURL(file)
     setPending((p) => [{ id, url: localUrl }, ...p])
+    setLocalPrev((m) => ({ ...m, [id]: localUrl }))
     try {
-      const r = await uploadToCloudinary(blob)
+      const r = await uploadToCloudinary(file)
       await addPhoto({
-        publicId: r.public_id, url: r.secure_url, width: r.width, height: r.height,
+        id, publicId: r.public_id, url: r.secure_url, width: r.width, height: r.height,
         uid: user.uid, name: profile.name, familyId: profile.familyId,
       })
     } catch {
-      // atla
+      setPending((p) => p.filter((x) => x.id !== id))
+      setLocalPrev((m) => { const n = { ...m }; delete n[id]; URL.revokeObjectURL(localUrl); return n })
     }
-    setPending((p) => p.filter((x) => x.id !== id))
-    if (localUrl.startsWith('blob:')) URL.revokeObjectURL(localUrl)
+    setProg((p) => {
+      const done = p.done + 1
+      return done >= p.total ? { done: 0, total: 0 } : { ...p, done }
+    })
   }
 
-  const onFiles = async (e) => {
+  const onFiles = (e) => {
     const files = [...(e.target.files || [])]
     e.target.value = ''
-    for (const f of files) uploadOne(f, URL.createObjectURL(f)) // paralel: hepsi hemen önizleme
+    if (!files.length) return
+    setProg((p) => ({ done: p.done, total: p.total + files.length }))
+    files.forEach(uploadOne)
   }
 
-  const seedDemo = async () => {
-    for (let i = 0; i < 6; i++) {
-      const blob = await makeDemoBlob(i)
-      if (blob) uploadOne(blob, URL.createObjectURL(blob))
-    }
+  const revealLoaded = (id) => {
+    // Gerçek küçük resim yüklendi -> yerel önizlemeyi bırak (bellek).
+    setLocalPrev((m) => {
+      if (!m[id]) return m
+      URL.revokeObjectURL(m[id])
+      const n = { ...m }; delete n[id]; return n
+    })
   }
 
   const tap = (id, index) => {
     if (selectMode) {
-      const n = new Set(selected)
-      n.has(id) ? n.delete(id) : n.add(id)
-      setSelected(n)
+      const n = new Set(selected); n.has(id) ? n.delete(id) : n.add(id); setSelected(n)
     } else setViewer(index)
   }
-
   const onTouchStart = (e, id) => {
     const t = e.touches[0]
     start.current = { x: t.clientX, y: t.clientY, id }
     dir.current = null
     if (!selectModeRef.current) {
       press.current = setTimeout(() => {
-        suppress.current = true
-        setSelectMode(true)
+        suppress.current = true; setSelectMode(true)
         const n = new Set(selectedRef.current); n.add(id); setSelected(n)
       }, 400)
     }
@@ -116,19 +126,18 @@ export default function Album() {
   const onTouchEnd = () => { clearTimeout(press.current); dir.current = null }
 
   const exitSelect = () => { setSelectMode(false); setSelected(new Set()) }
-  const downloadSelected = () => {
+  const downloadSelected = () =>
     photos.filter((p) => selected.has(p.id))
       .forEach((p, i) => setTimeout(() => triggerDownload(p.publicId, p.uploaderName), i * 350))
-  }
   const deleteSelected = () => {
     const list = photos.filter((p) => selected.has(p.id) && (admin || p.uploaderUid === user.uid))
     if (!list.length) return
     if (!confirm(`${list.length} fotoğraf silinsin mi?`)) return
-    list.forEach((p) => deletePhoto(p.id))
-    exitSelect()
+    list.forEach((p) => deletePhoto(p.id)); exitSelect()
   }
 
-  const busy = pending.length > 0
+  const pendingShow = pending.filter((p) => !photoIds.has(p.id))
+  const uploadingCount = pendingShow.length
 
   return (
     <div className="space-y-4">
@@ -143,9 +152,7 @@ export default function Album() {
         <div className="flex items-center justify-between gap-2">
           <div>
             <h1 className="font-display text-2xl font-bold">📸 Albüm</h1>
-            <p className="text-slate-400 text-sm">
-              {photos.length} fotoğraf{busy ? ` · ${pending.length} yükleniyor` : ''}
-            </p>
+            <p className="text-slate-400 text-sm">{photos.length} fotoğraf</p>
           </div>
           <div className="flex items-center gap-2">
             {photos.length > 0 && (
@@ -157,29 +164,37 @@ export default function Album() {
       )}
       <input ref={inputRef} type="file" accept="image/*" multiple className="hidden" onChange={onFiles} />
 
-      {admin && photos.length === 0 && pending.length === 0 && (
-        <button onClick={seedDemo} className="btn-ghost w-full py-2.5 text-sm">
-          🧪 Deneme fotoğrafları ekle (6 adet)
-        </button>
+      {prog.total > 0 && (
+        <div className="card p-3">
+          <div className="flex justify-between text-xs text-slate-300 mb-1.5">
+            <span>Yükleniyor…</span>
+            <span className="tabular-nums">{prog.done}/{prog.total}</span>
+          </div>
+          <div className="h-2 rounded-full bg-white/10 overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-gold-400 to-gold-600 transition-all"
+              style={{ width: `${(prog.done / prog.total) * 100}%` }} />
+          </div>
+        </div>
       )}
 
-      {photos.length === 0 && pending.length === 0 ? (
+      {photos.length === 0 && uploadingCount === 0 ? (
         <div className="card p-8 text-center text-slate-400">
           <div className="text-4xl mb-2">🖼️</div>
           Henüz fotoğraf yok. İlk anıyı sen ekle!
         </div>
       ) : (
         <div ref={setGrid} className="grid grid-cols-3 gap-1.5">
-          {pending.map((p) => (
+          {pendingShow.map((p) => (
             <div key={p.id} className="relative aspect-square rounded-lg overflow-hidden bg-white/5">
-              <img src={p.url} alt="" className="w-full h-full object-cover opacity-60" />
-              <span className="absolute inset-0 grid place-items-center">
+              <img src={p.url} alt="" className="w-full h-full object-cover opacity-70" />
+              <span className="absolute inset-0 grid place-items-center bg-black/20">
                 <span className="w-6 h-6 rounded-full border-2 border-white/40 border-t-white animate-spin" />
               </span>
             </div>
           ))}
           {photos.map((p, index) => {
             const sel = selected.has(p.id)
+            const bg = localPrev[p.id] || cldUrl(p.publicId, 'w_24,e_blur:1000,q_1,f_auto')
             return (
               <button
                 key={p.id}
@@ -188,14 +203,14 @@ export default function Album() {
                 onTouchEnd={onTouchEnd}
                 onClick={() => { if (suppress.current) { suppress.current = false; return } tap(p.id, index) }}
                 className="relative aspect-square rounded-lg overflow-hidden bg-center bg-cover"
-                style={{ backgroundImage: `url(${cldUrl(p.publicId, 'w_24,e_blur:1000,q_1,f_auto')})` }}
+                style={{ backgroundImage: `url("${bg}")` }}
               >
                 <img
                   src={cldUrl(p.publicId, 'w_400,h_400,c_fill,q_auto,f_auto')}
                   alt=""
                   loading="lazy"
-                  onLoad={(e) => (e.currentTarget.style.opacity = 1)}
-                  className="w-full h-full object-cover pointer-events-none opacity-0 transition-opacity duration-500"
+                  onLoad={(e) => { e.currentTarget.style.opacity = 1; revealLoaded(p.id) }}
+                  className="w-full h-full object-cover pointer-events-none opacity-0 transition-opacity duration-300"
                 />
                 {selectMode && (
                   <span className={`absolute top-1.5 right-1.5 w-6 h-6 rounded-full grid place-items-center text-xs border-2 ${
@@ -219,30 +234,6 @@ export default function Album() {
       )}
     </div>
   )
-}
-
-function makeDemoBlob(i) {
-  return new Promise((res) => {
-    const c = document.createElement('canvas')
-    c.width = 1200; c.height = 800
-    const x = c.getContext('2d')
-    const pals = [
-      ['#0b1024', '#f7d066'], ['#08131f', '#7dd3fc'], ['#260a13', '#f5c451'],
-      ['#0a0a15', '#ff2d78'], ['#1a1410', '#f0a04b'], ['#06140c', '#4ade80'],
-    ]
-    const [bg, ac] = pals[i % pals.length]
-    x.fillStyle = bg; x.fillRect(0, 0, 1200, 800)
-    const cx = 600, cy = 380
-    x.strokeStyle = ac; x.fillStyle = ac; x.lineWidth = 6
-    for (let k = 0; k < 16; k++) {
-      const a = (2 * Math.PI * k) / 16
-      x.beginPath(); x.moveTo(cx, cy); x.lineTo(cx + Math.cos(a) * 260, cy + Math.sin(a) * 180); x.stroke()
-      x.beginPath(); x.arc(cx + Math.cos(a) * 260, cy + Math.sin(a) * 180, 10, 0, 7); x.fill()
-    }
-    x.fillStyle = '#fff'; x.beginPath(); x.arc(cx, cy, 16, 0, 7); x.fill()
-    x.font = 'bold 64px sans-serif'; x.fillStyle = '#fff'; x.fillText('Deneme ' + (i + 1), 40, 720)
-    c.toBlob((b) => res(b), 'image/jpeg', 0.85)
-  })
 }
 
 function Viewer({ photos, index, setIndex, user, admin, onClose }) {
