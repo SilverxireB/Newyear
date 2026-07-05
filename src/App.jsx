@@ -4,7 +4,6 @@ import Layout from './components/Layout.jsx'
 import Splash from './components/Splash.jsx'
 import SetupNeeded from './pages/SetupNeeded.jsx'
 import Login from './pages/Login.jsx'
-import SelectFamily from './pages/SelectFamily.jsx'
 import Home from './pages/Home.jsx'
 import Expenses from './pages/Expenses.jsx'
 import Liste from './pages/Liste.jsx'
@@ -16,12 +15,11 @@ import Vampir from './pages/Vampir.jsx'
 import Admin from './pages/Admin.jsx'
 
 export default function App() {
-  const { isConfigured, loading, user, profile, admin } = useAuth()
+  const { isConfigured, loading, user, admin } = useAuth()
 
   if (!isConfigured) return <SetupNeeded />
   if (loading) return <Splash />
   if (!user) return <Login />
-  if (!profile?.familyId) return <SelectFamily />
 
   return (
     <Layout>
