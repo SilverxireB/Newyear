@@ -1,7 +1,7 @@
 // Cloudinary ayarları — bu değerler herkese açıktır (istemci tarafı, gizli değil).
 // Kullanıcı "Cloud name" ve "unsigned upload preset" verince buraya gömülür.
-export const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || ''
-export const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || ''
+export const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dah8lwcea'
+export const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'Claude'
 
 export const isCloudinaryConfigured = Boolean(CLOUD_NAME && UPLOAD_PRESET)
 
