@@ -8,6 +8,7 @@ import SelectFamily from './pages/SelectFamily.jsx'
 import Home from './pages/Home.jsx'
 import Expenses from './pages/Expenses.jsx'
 import Liste from './pages/Liste.jsx'
+import Album from './pages/Album.jsx'
 import Oyunlar from './pages/Oyunlar.jsx'
 import Tombala from './pages/Tombala.jsx'
 import Tabu from './pages/Tabu.jsx'
@@ -28,6 +29,7 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/masraf" element={<Expenses />} />
         <Route path="/liste" element={<Liste />} />
+        <Route path="/album" element={<Album />} />
         <Route path="/oyunlar" element={<Oyunlar />} />
         <Route path="/tombala" element={<Tombala />} />
         <Route path="/tabu" element={<Tabu />} />

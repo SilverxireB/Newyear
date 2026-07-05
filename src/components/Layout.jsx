@@ -3,9 +3,10 @@ import { useAuth } from '../context/AuthContext.jsx'
 import Fireworks from './Fireworks.jsx'
 
 const navItems = [
-  { to: '/', label: 'Ana Sayfa', icon: '🏠', end: true },
+  { to: '/', label: 'Ana', icon: '🏠', end: true },
   { to: '/masraf', label: 'Masraf', icon: '💸' },
   { to: '/liste', label: 'Liste', icon: '🛒' },
+  { to: '/album', label: 'Albüm', icon: '📸' },
   { to: '/oyunlar', label: 'Oyunlar', icon: '🎮' },
 ]
 
@@ -59,7 +60,7 @@ export default function Layout({ children }) {
       <main className="flex-1 mx-auto w-full max-w-2xl px-4 py-5 pb-28">{children}</main>
 
       <nav className="pb-safe fixed bottom-0 inset-x-0 z-20 bg-night-900/80 backdrop-blur border-t border-white/10">
-        <div className="mx-auto max-w-2xl px-2 grid grid-cols-4">
+        <div className="mx-auto max-w-2xl px-1 grid grid-cols-5">
           {navItems.map((item) => (
             <NavItem key={item.to} {...item} />
           ))}

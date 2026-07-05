@@ -59,6 +59,14 @@ service cloud.firestore {
       allow read, write: if isSignedIn();
     }
 
+    // Fotoğraf albümü (foto dosyaları Cloudinary'de; burada sadece linkler tutulur).
+    match /photos/{id} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow delete: if isSignedIn()
+        && (resource.data.uploaderUid == request.auth.uid || isAdmin());
+    }
+
     // Vampir Köylü: oyun durumu herkese açık; roller KİŞİYE ÖZEL (herkes sadece kendi rolünü okur).
     match /vampir/{docId} {
       allow read: if isSignedIn();
