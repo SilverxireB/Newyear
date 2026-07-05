@@ -23,6 +23,20 @@ export function cldUrl(publicId, transform) {
   return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/${transform}/${publicId}`
 }
 
+// Tam boy indirme linki (fl_attachment -> tarayıcı indirir; f_jpg -> her cihazda açılır).
+export function downloadUrl(publicId) {
+  return cldUrl(publicId, 'fl_attachment,f_jpg,q_auto:best')
+}
+
+export function triggerDownload(publicId, name) {
+  const a = document.createElement('a')
+  a.href = downloadUrl(publicId)
+  a.download = `${name || 'foto'}.jpg`
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+}
+
 // Tarayıcıda küçült (uzun kenar maxDim px, JPEG). Başarısızsa null döner -> orijinal yüklenir.
 export function compressImage(file, maxDim = 1600, quality = 0.82) {
   return new Promise((resolve) => {
