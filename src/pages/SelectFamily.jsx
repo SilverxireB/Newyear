@@ -46,8 +46,9 @@ export default function SelectFamily() {
           {families.map((f) => (
             <button
               key={f.id}
+              type="button"
               onClick={() => choose(f.id)}
-              disabled={!!saving}
+              disabled={saving === f.id}
               className="card w-full p-4 flex items-center gap-3 text-left active:scale-[0.99] transition disabled:opacity-60"
             >
               <span

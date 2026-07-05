@@ -42,7 +42,7 @@ export const TABU_DECK = [
   { word: 'Hastane', taboo: ['Doktor', 'Hasta', 'Ambulans', 'Hemşire', 'Acil'] },
   { word: 'Şeker', taboo: ['Tatlı', 'Çay', 'Beyaz', 'Bayram', 'Çikolata'] },
   { word: 'Anahtar', taboo: ['Kilit', 'Kapı', 'Açmak', 'Cep', 'Ev'] },
-  { word: 'Merdiven', taboo: ['Basamak', 'Çıkmak', 'Kat', 'İnmek', 'Kat'] },
+  { word: 'Merdiven', taboo: ['Basamak', 'Çıkmak', 'Kat', 'İnmek', 'Tırmanmak'] },
   { word: 'Çadır', taboo: ['Kamp', 'Doğa', 'Kurmak', 'Uyku tulumu', 'Bez'] },
   { word: 'Terzi', taboo: ['Dikiş', 'İğne', 'Kumaş', 'Elbise', 'İplik'] },
   { word: 'Fırın', taboo: ['Ekmek', 'Pişirmek', 'Sıcak', 'Hamur', 'Pasta'] },

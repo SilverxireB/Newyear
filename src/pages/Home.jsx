@@ -2,14 +2,16 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
 import { subscribeFamilies } from '../lib/families.js'
+import { setUserFamily } from '../lib/users.js'
 import { computeSettlement, formatTL, subscribeExpenses } from '../lib/expenses.js'
 import { subscribeLedger, sumLedger } from '../lib/tombala.js'
 
 export default function Home() {
-  const { profile } = useAuth()
+  const { user, profile } = useAuth()
   const [families, setFamilies] = useState([])
   const [expenses, setExpenses] = useState([])
   const [ledger, setLedger] = useState([])
+  const [pickFamily, setPickFamily] = useState(false)
   const countdown = useCountdown()
 
   useEffect(() => {
@@ -49,8 +51,11 @@ export default function Home() {
 
       {/* Aile durumu */}
       <section className="grid grid-cols-2 gap-3">
-        <div className="card p-4">
-          <div className="text-xs text-slate-400">Ailen</div>
+        <button onClick={() => setPickFamily(true)} className="card p-4 text-left active:scale-[0.99] transition">
+          <div className="text-xs text-slate-400 flex items-center justify-between">
+            <span>Ailen</span>
+            <span className="text-gold-400">değiştir</span>
+          </div>
           <div className="mt-1 flex items-center gap-2 font-semibold">
             {myFamily && (
               <span
@@ -58,9 +63,9 @@ export default function Home() {
                 style={{ background: myFamily.color }}
               />
             )}
-            <span className="truncate">{myFamily?.name || '—'}</span>
+            <span className="truncate">{myFamily?.name || '— seç —'}</span>
           </div>
-        </div>
+        </button>
         <div className="card p-4">
           <div className="text-xs text-slate-400">Aile durumun</div>
           <div
@@ -106,6 +111,42 @@ export default function Home() {
             })}
           </ul>
         </section>
+      )}
+
+      {pickFamily && (
+        <div
+          className="fixed inset-0 z-50 bg-black/70 flex items-end sm:items-center justify-center p-4"
+          onClick={() => setPickFamily(false)}
+        >
+          <div className="card w-full max-w-sm p-4 animate-fade-up" onClick={(e) => e.stopPropagation()}>
+            <h3 className="font-display font-bold mb-1">Aileni seç</h3>
+            <p className="text-xs text-slate-400 mb-3">Yanlış seçtiysen buradan değiştirebilirsin.</p>
+            <div className="space-y-2">
+              {families.map((f) => {
+                const mine = f.id === profile?.familyId
+                return (
+                  <button
+                    key={f.id}
+                    onClick={async () => {
+                      await setUserFamily(user.uid, f.id)
+                      setPickFamily(false)
+                    }}
+                    className={`w-full p-3 rounded-xl border flex items-center gap-3 text-left transition ${
+                      mine ? 'border-gold-400/50 bg-gold-500/10' : 'border-white/10 bg-white/5'
+                    }`}
+                  >
+                    <span className="w-8 h-8 rounded-full shrink-0" style={{ background: f.color }} />
+                    <span className="flex-1 font-semibold">{f.name}</span>
+                    {mine && <span className="text-gold-400 text-sm">✓</span>}
+                  </button>
+                )
+              })}
+            </div>
+            <button onClick={() => setPickFamily(false)} className="mt-3 w-full text-center text-sm text-slate-400">
+              Kapat
+            </button>
+          </div>
+        </div>
       )}
     </div>
   )
