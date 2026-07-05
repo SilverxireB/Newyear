@@ -2,6 +2,12 @@ import { useEffect, useRef, useState } from 'react'
 import { TABU_DECK } from '../data/tabuDeck.js'
 
 const DURATIONS = [60, 90, 120]
+const LEVELS = [
+  { id: 0, label: 'Hepsi' },
+  { id: 1, label: 'Kolay' },
+  { id: 2, label: 'Orta' },
+  { id: 3, label: 'Zor' },
+]
 
 function shuffle(arr) {
   const a = [...arr]
@@ -18,6 +24,7 @@ export default function Tabu() {
     { name: 'Takım 2', score: 0 },
   ])
   const [duration, setDuration] = useState(60)
+  const [level, setLevel] = useState(0)
   const [phase, setPhase] = useState('setup') // setup | playing | roundEnd
   const [turn, setTurn] = useState(0)
   const [timeLeft, setTimeLeft] = useState(duration)
@@ -25,9 +32,15 @@ export default function Tabu() {
   const [round, setRound] = useState({ correct: 0, pass: 0, tabu: 0 })
 
   const queue = useRef([])
+  const queueLevel = useRef(-1)
 
+  // Seçili zorluktan, tekrar etmeyen bir kart çek. Deste bitince yeniden karışır.
   const drawCard = () => {
-    if (queue.current.length === 0) queue.current = shuffle(TABU_DECK)
+    if (queue.current.length === 0 || queueLevel.current !== level) {
+      const pool = level === 0 ? TABU_DECK : TABU_DECK.filter((c) => c.level === level)
+      queue.current = shuffle(pool)
+      queueLevel.current = level
+    }
     setCard(queue.current.pop())
   }
 
@@ -168,7 +181,7 @@ export default function Tabu() {
           ))}
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-400">Süre:</span>
+          <span className="text-xs text-slate-400 w-12">Süre:</span>
           {DURATIONS.map((d) => (
             <button
               key={d}
@@ -183,6 +196,25 @@ export default function Tabu() {
             </button>
           ))}
         </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-slate-400 w-12">Zorluk:</span>
+          {LEVELS.map((l) => (
+            <button
+              key={l.id}
+              onClick={() => setLevel(l.id)}
+              className={`text-xs px-2.5 py-1 rounded-lg border transition ${
+                level === l.id
+                  ? 'border-gold-400/50 bg-gold-500/15 text-gold-200'
+                  : 'border-white/10 text-slate-300'
+              }`}
+            >
+              {l.label}
+            </button>
+          ))}
+        </div>
+        <p className="text-[11px] text-slate-500">
+          {TABU_DECK.length} kart · aynı kart deste bitmeden tekrar gelmez.
+        </p>
       </div>
 
       <div className="card p-4 text-center">
