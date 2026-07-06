@@ -47,10 +47,10 @@ service cloud.firestore {
       allow read: if isSignedIn();
       allow write: if isSignedIn();
 
-      // Kartlar: herkes görebilir; kişi yalnızca kendi kartını yazar.
+      // Kartlar: herkes görebilir; kişi yalnızca kendi kartını yazar veya yönetici siler.
       match /cards/{uid} {
         allow read: if isSignedIn();
-        allow write: if isSignedIn() && request.auth.uid == uid;
+        allow write: if isSignedIn() && (request.auth.uid == uid || isAdmin());
       }
     }
 

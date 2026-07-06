@@ -261,7 +261,7 @@ function Viewer({ photos, index, setIndex, user, admin, onClose }) {
         <button onClick={onClose} className="text-slate-300 px-2">✕</button>
       </div>
       <div
-        className="flex-1 flex items-center justify-center relative"
+        className="flex-1 min-h-0 flex items-center justify-center relative"
         onClick={(e) => e.stopPropagation()}
         onTouchStart={(e) => (touchX.current = e.touches[0].clientX)}
         onTouchEnd={(e) => {

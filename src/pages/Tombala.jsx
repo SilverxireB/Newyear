@@ -186,7 +186,9 @@ function HostPanel({ game, user, profile, cards, families }) {
   if (!playing) {
     return (
       <div className="card p-4 space-y-3">
-        <h2 className="font-display font-bold">🎛️ Oyunu başlat (yönetici)</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="font-display font-bold">🎛️ Oyunu başlat (yönetici)</h2>
+        </div>
 
         <div>
           <label className="label">Giriş bahsi (kart başı ₺)</label>
@@ -209,6 +211,11 @@ function HostPanel({ game, user, profile, cards, families }) {
           <button onClick={() => begin('numbers')} disabled={busy} className="btn-ghost py-3">
             🔢 Sadece Numara Çek — kart yok, bahissiz
           </button>
+          {game && (
+             <button onClick={() => { if (confirm('Eski oyundan kalan takılı durumları temizlemek istediğinize emin misiniz?')) resetGame() }} disabled={busy} className="btn-ghost py-2 mt-2 opacity-50 hover:opacity-100 text-xs">
+               🧹 Sistemi Temizle (Takılı Kaldıysa)
+             </button>
+          )}
         </div>
         <p className="text-xs text-slate-500">
           Kartlı modda herkese 6 kart gösterilir, beğendiğini seçer. Numara modunda elindeki fiziki
@@ -227,7 +234,9 @@ function HostPanel({ game, user, profile, cards, families }) {
         <h2 className="font-display font-bold">
           🎛️ Yönetici · {cardsMode ? 'Kartlı' : 'Numara'}
         </h2>
-        <span className="text-xs text-slate-400">{drawnCount}/90</span>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-slate-400">{drawnCount}/90</span>
+        </div>
       </div>
 
       {cardsMode && (
@@ -256,6 +265,15 @@ function HostPanel({ game, user, profile, cards, families }) {
             Bitir
           </button>
         )}
+      </div>
+      
+      <div className="text-right">
+        <button
+          onClick={() => { if (confirm('Mevcut oyunu iptal edip tamamen sıfırlamak istediğinize emin misiniz?')) resetGame() }}
+          className="text-xs text-slate-500 hover:text-slate-300 transition"
+        >
+          ⚠️ Oyunu İptal Et
+        </button>
       </div>
 
       {/* Otomatik çekme */}

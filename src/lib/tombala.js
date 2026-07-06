@@ -157,7 +157,13 @@ async function clearCards() {
   if (snap.empty) return
   const batch = writeBatch(db)
   snap.docs.forEach((d) => batch.delete(d.ref))
-  await batch.commit()
+  try {
+    await batch.commit()
+  } catch (err) {
+    console.error("Kartlar silinirken yetki hatası:", err)
+    alert("Dikkat: Eski kartlar silinemedi! Lütfen Firebase Console'dan güncel firestore.rules'u uygulayın.")
+    throw err
+  }
 }
 
 // ---- Kartlar ----
