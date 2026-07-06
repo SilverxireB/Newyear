@@ -64,7 +64,11 @@ export default function Tabu() {
 
   const endRound = () => {
     setTeams((ts) =>
-      ts.map((t, i) => (i === turn ? { ...t, score: t.score + round.correct - round.tabu } : t)),
+      ts.map((t, i) => {
+        if (i !== turn) return t
+        const passPenalty = Math.floor(round.pass / 3)
+        return { ...t, score: t.score + round.correct - round.tabu - passPenalty }
+      })
     )
     setPhase('roundEnd')
   }
@@ -130,12 +134,16 @@ export default function Tabu() {
           <span>Pas {round.pass}</span>
           <span className="text-rose-400">Tabu {round.tabu}</span>
         </div>
+        <div className="text-center text-[11px] text-slate-500 mt-1">
+          (Her 3 Pas = 1 Tabu sayılır)
+        </div>
       </div>
     )
   }
 
   if (phase === 'roundEnd') {
-    const net = round.correct - round.tabu
+    const passPenalty = Math.floor(round.pass / 3)
+    const net = round.correct - round.tabu - passPenalty
     return (
       <div className="space-y-4">
         <div className="card p-6 text-center">
@@ -151,6 +159,11 @@ export default function Tabu() {
             <span>Pas {round.pass}</span>
             <span className="text-rose-400">Tabu {round.tabu}</span>
           </div>
+          {passPenalty > 0 && (
+            <div className="text-center text-xs text-rose-400/80 mt-1.5">
+              ({round.pass} pastan dolayı ekstra -{passPenalty} puan)
+            </div>
+          )}
         </div>
         <Scoreboard teams={teams} turn={turn} />
         <button onClick={nextTurn} className="btn-gold w-full py-3.5">
