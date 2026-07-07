@@ -66,7 +66,7 @@ export default function Tabu() {
     setTeams((ts) =>
       ts.map((t, i) => {
         if (i !== turn) return t
-        const passPenalty = Math.floor(round.pass / 3)
+        const passPenalty = Math.max(0, round.pass - 3)
         return { ...t, score: t.score + round.correct - round.tabu - passPenalty }
       })
     )
@@ -135,14 +135,14 @@ export default function Tabu() {
           <span className="text-rose-400">Tabu {round.tabu}</span>
         </div>
         <div className="text-center text-[11px] text-slate-500 mt-1">
-          (Her 3 Pas = 1 Tabu sayılır)
+          (En fazla 3 pas bedava, sonrası Tabu sayılır)
         </div>
       </div>
     )
   }
 
   if (phase === 'roundEnd') {
-    const passPenalty = Math.floor(round.pass / 3)
+    const passPenalty = Math.max(0, round.pass - 3)
     const net = round.correct - round.tabu - passPenalty
     return (
       <div className="space-y-4">
@@ -161,7 +161,7 @@ export default function Tabu() {
           </div>
           {passPenalty > 0 && (
             <div className="text-center text-xs text-rose-400/80 mt-1.5">
-              ({round.pass} pastan dolayı ekstra -{passPenalty} puan)
+              (3 pas hakkı aşıldı: {passPenalty} pastan dolayı ekstra -{passPenalty} puan)
             </div>
           )}
         </div>
