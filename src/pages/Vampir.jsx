@@ -155,7 +155,7 @@ function HostPanel({ game, user }) {
   const vc = Math.min(vampCount, maxVamp)
 
   const deal = async () => {
-    if (players.length < 3) return
+    if (players.length < 1) return
     setBusy(true)
     setError('')
     try {
@@ -213,7 +213,7 @@ function HostPanel({ game, user }) {
       </div>
 
       <div className="flex gap-2">
-        <button onClick={deal} disabled={busy || players.length < 3} className="btn-gold flex-1 py-3">
+        <button onClick={deal} disabled={busy || players.length < 1} className="btn-gold flex-1 py-3">
           🎲 {game?.status === 'dealt' ? 'Yeniden dağıt' : 'Rolleri dağıt'}
         </button>
         {game?.status === 'dealt' && (
@@ -223,13 +223,10 @@ function HostPanel({ game, user }) {
         )}
       </div>
       {playersFromUsers.length < 3 && (
-        <p className="text-xs text-rose-400">
-          Sadece {playersFromUsers.length} kişi giriş yapmış. En az 3 kişi giriş yapmalı ki
-          oynanabilsin.
+        <p className="text-xs text-slate-500">
+          Şu an {playersFromUsers.length} kişi giriş yapmış. Gerçek oyun için 4+ kişi iyi olur ama
+          tek başına da test edebilirsin.
         </p>
-      )}
-      {playersFromUsers.length >= 3 && players.length < 3 && (
-        <p className="text-xs text-rose-400">En az 3 oyuncu seç.</p>
       )}
       {error && <p className="text-xs text-rose-400">Hata: {error}</p>}
     </div>
