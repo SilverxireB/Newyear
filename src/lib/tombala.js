@@ -212,10 +212,11 @@ export async function ensureCard({ uid, name, familyId }) {
 }
 
 export async function claimWin(type, { uid, name, familyId }) {
+  // Kazanan yazılır ama oyun otomatik bitmez — host "Bitir & masrafa ekle" ile kapatır
+  // (böylece finalizeGame çalışır, para masrafa işlenir, takılma olmaz).
   await updateDoc(GAME(), {
     [`winners.${type}`]: arrayUnion({ uid, name, familyId: familyId || null }),
   })
-  if (type === 'tombala') await finishGame()
 }
 
 // ---- Kart üretimi (Türk tombalası: 3 satır x 9 sütun, her satırda 5 sayı = 15) ----
