@@ -136,6 +136,7 @@ function HostPanel({ game, user }) {
   const [selected, setSelected] = useState(null) // Set of uids
   const [vampCount, setVampCount] = useState(2)
   const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => subscribeUsers(setUsers), [])
 
@@ -156,8 +157,11 @@ function HostPanel({ game, user }) {
   const deal = async () => {
     if (players.length < 3) return
     setBusy(true)
+    setError('')
     try {
       await dealRoles({ players, vampCount: vc, hostUid: user.uid, hostName: user.displayName })
+    } catch (e) {
+      setError(e?.message || 'Dağıtılamadı, tekrar dene.')
     } finally {
       setBusy(false)
     }
@@ -218,9 +222,16 @@ function HostPanel({ game, user }) {
           </button>
         )}
       </div>
-      {players.length < 3 && (
+      {playersFromUsers.length < 3 && (
+        <p className="text-xs text-rose-400">
+          Sadece {playersFromUsers.length} kişi giriş yapmış. En az 3 kişi giriş yapmalı ki
+          oynanabilsin.
+        </p>
+      )}
+      {playersFromUsers.length >= 3 && players.length < 3 && (
         <p className="text-xs text-rose-400">En az 3 oyuncu seç.</p>
       )}
+      {error && <p className="text-xs text-rose-400">Hata: {error}</p>}
     </div>
   )
 }
