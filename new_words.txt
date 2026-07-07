@@ -1,0 +1,398 @@
+KIRMIZI|Renk,Kan,Elma,Domates,Bayrak|kolay
+MAVİ|Renk,Gökyüzü,Deniz,Su,Göz|kolay
+SARI|Renk,Güneş,Limon,Muz,Papatya|kolay
+YEŞİL|Renk,Doğa,Ağaç,Çimen,Yaprak|kolay
+SİYAH|Renk,Karanlık,Gece,Kömür,Beyaz|kolay
+BEYAZ|Renk,Kar,Süt,Temiz,Siyah|kolay
+MOR|Renk,Menekşe,Patlıcan,Koyu,Lila|kolay
+PEMBE|Renk,Kız,Şeker,Gül,Çiçek|kolay
+TURUNCU|Renk,Portakal,Mandalina,Havuç,Karışım|kolay
+GRİ|Renk,Bulut,Kül,Siyah,Beyaz|kolay
+BAŞ|Kafa,Vücut,Akıl,Saç,Ağrımak|kolay
+GÖZ|Görmek,Vücut,Organ,Gözlük,Kör|kolay
+KULAK|Duymak,Vücut,Ses,İşitmek,Organ|kolay
+BURUN|Koku,Vücut,Nefes,Organ,Almak|kolay
+AĞIZ|Yemek,Konuşmak,Dil,Diş,Vücut|kolay
+DİŞ|Ağız,Isırmak,Çürük,Fırça,Beyaz|kolay
+DİL|Ağız,Tat,Konuşmak,Organ,Yalamak|kolay
+BOYUN|Baş,Vücut,Boğaz,Atkı,Ağrı|kolay
+KOL|Vücut,Bacak,El,Dirsek,Kaldırmak|kolay
+BACAK|Vücut,Kol,Yürümek,Ayak,Pantolon|kolay
+EL|Parmak,Tutmak,Vücut,Avuç,Kol|kolay
+PARMAK|El,Ayak,Tırnak,Yüzük,Beş|kolay
+TIRNAK|Parmak,Uzatmak,Kesmek,Oje,Çizmek|kolay
+AYAK|Bacak,Ayakkabı,Yürümek,Parmak,Vücut|kolay
+DİZ|Bacak,Eklem,Bükmek,Yara,Vücut|kolay
+OMUZ|Baş,Boyun,Kol,Vücut,Taşımak|kolay
+SIRT|Vücut,Arka,Ağrı,Çanta,Omurga|kolay
+KARIN|Vücut,Mide,Aç,Tok,Şişman|kolay
+KALP|Organ,Kan,Vurmak,Aşk,Kırmızı|kolay
+KAN|Kırmızı,Damar,Vücut,Akma,Yara|kolay
+KAZAK|Kış,Giyim,Yün,Sıcak,Giymek|kolay
+MONT|Kış,Soğuk,Giyim,Ceket,Kaban|kolay
+CEKET|Giyim,Takım,Mont,Kıyafet,Kravat|kolay
+HIRKA|Giyim,Kış,Örgü,Yün,Kazak|kolay
+YELEK|Giyim,Kolsuz,Ceket,Takım,Kıyafet|kolay
+ATLET|İç,Çamaşır,Ter,Beyaz,Giyim|kolay
+TİŞÖRT|Yaz,Giyim,Kısa,Kol,Kıyafet|kolay
+ŞORT|Yaz,Giyim,Kısa,Pantolon,Bacak|kolay
+EŞOFMAN|Spor,Giyim,Rahat,Koşu,Pantolon|kolay
+PİJAMA|Uyku,Gece,Yatak,Giyim,Rahat|kolay
+TERLİK|Ayak,Ev,Yaz,Plaj,Giyilmek|kolay
+ÇİZME|Kış,Ayakkabı,Yağmur,Ayak,Uzun|kolay
+BOT|Kış,Ayakkabı,Kar,Ayak,Kısa|kolay
+KRAVAT|Takım,Elbise,Boyun,Bağlamak,Gömlek|kolay
+KEMER|Pantolon,Bel,Bağlamak,Deri,Düşmek|kolay
+BUZDOLABI|Soğuk,Mutfak,Yemek,Saklamak,Buz|kolay
+FIRIN|Mutfak,Pişirmek,Kek,Sıcak,Ocak|kolay
+OCAK|Mutfak,Yemek,Pişirmek,Ateş,Tüp|kolay
+SÜPÜRGE|Temizlik,Toz,Ev,Elektrik,Halı|kolay
+KOVA|Su,Temizlik,Plaj,Plastik,Taşımak|kolay
+SABUN|Yıkamak,Köpük,Temizlik,El,Banyo|kolay
+PEÇETE|Ağız,Silmek,Kağıt,Yemek,Masa|kolay
+KOLONYA|Koku,Limon,Bayram,Misafir,El|kolay
+BIÇAK|Kesmek,Mutfak,Çatal,Keskin,Meyve|kolay
+ÇATAL|Mutfak,Bıçak,Yemek,Batırmak,Kaşık|kolay
+KAŞIK|Mutfak,Çorba,Yemek,Çatal,Sıvı|kolay
+TABAK|Mutfak,Yemek,Porselen,Kırılmak,Kase|kolay
+BARDAK|İçmek,Su,Cam,Mutfak,Kupa|kolay
+TENCERE|Mutfak,Yemek,Pişirmek,Kapak,Tava|kolay
+TAVA|Mutfak,Kızartmak,Yumurta,Yağ,Tencere|kolay
+KURŞUN KALEM|Yazı,Silgi,Uç,Okul,Açmak|kolay
+TÜKENMEZ KALEM|Yazı,Mürekkep,Silinmez,Okul,Mavi|kolay
+SİLGİ|Kalem,Hata,Kağıt,Temizlemek,Okul|kolay
+CETVEL|Ölçmek,Çizgi,Düz,Okul,Matematik|kolay
+YAPIŞTIRICI|Kağıt,Bant,Okul,Kopmak,Sürmek|kolay
+MAKAS|Kesmek,Kağıt,Kumaş,İki,Alet|kolay
+BOYA|Renk,Resim,Fırça,Yapmak,Duvar|kolay
+FIRÇA|Boya,Saç,Resim,Sürmek,Taramak|kolay
+PİRİNÇ|Pilav,Beyaz,Yemek,Tahıl,Sulu|kolay
+BULGUR|Pilav,Sarı,Yemek,Tahıl,Köfte|kolay
+FASULYE|Kuru,Yemek,Barbunya,Nohut,Pilav|kolay
+NOHUT|Yemek,Kuru,Leblebi,Fasulye,Pilav|kolay
+MERCİMEK|Çorba,Kırmızı,Yeşil,Yemek,Sıcak|kolay
+PATATES|Kızartma,Yemek,Sebze,Toprak,Soymak|kolay
+SOĞAN|Ağlamak,Sebze,Yemek,Göz,Sarımsak|kolay
+SARIMSAK|Koku,Sebze,Soğan,Yemek,Mantı|kolay
+PATLICAN|Mor,Sebze,Yemek,Musakka,Karnıyarık|kolay
+BİBER|Acı,Sebze,Yeşil,Kırmızı,Yemek|kolay
+SALATALIK|Yeşil,Sebze,Salata,Su,Domates|kolay
+HAVUÇ|Turuncu,Tavşan,Sebze,Göz,Salata|kolay
+LİMON|Ekşi,Sarı,Çorba,Salata,Sıkmak|kolay
+ARMUT|Meyve,Elma,Sarı,Tatlı,Ağaç|kolay
+PORTAKAL|Turuncu,Meyve,Kış,C Vitamini,Sıkmak|kolay
+MANDALİNA|Turuncu,Meyve,Kış,Soymak,Portakal|kolay
+İNCİR|Meyve,Tatlı,Yaz,Kuru,Ağaç|kolay
+KİRAZ|Kırmızı,Meyve,Yaz,Küçük,Sap|kolay
+ŞEFTALİ|Tüylü,Meyve,Yaz,Tatlı,Çekirdek|kolay
+ERİK|Yeşil,Meyve,Ekşi,Yaz,Tuz|kolay
+KAYISI|Sarı,Meyve,Tatlı,Çekirdek,Malatya|kolay
+CEVİZ|Kuruyemiş,Kırmak,Beyin,Kabuk,Fındık|kolay
+FINDIK|Kuruyemiş,Karadeniz,Ceviz,Kırmak,Çikolata|kolay
+FISTIK|Kuruyemiş,Antep,Tuzlu,Fındık,Yeşil|kolay
+BADEM|Kuruyemiş,Göz,Fındık,Ceviz,Sert|kolay
+CİPS|Patates,Paket,Tuzlu,Atıştırmalık,Kola|kolay
+BİSKÜVİ|Çay,Tatlı,Atıştırmalık,Paket,Kraker|kolay
+KEK|Tatlı,Fırın,Dilim,Çikolatalı,Kabarmak|kolay
+KURABİYE|Tatlı,Fırın,Kek,Hamur,Çay|kolay
+ÇİKOLATA|Kakao,Tatlı,Bitter,Sütlü,Erimemek|kolay
+SAKIZ|Çiğnemek,Şişirmek,Ağız,Patlatmak,Tatlı|kolay
+ŞEKER|Tatlı,Çay,Küp,Toz,Bayram|kolay
+LOKUM|Tatlı,Kahve,Türk,Küp,Gül|kolay
+HELVA|Tatlı,Tahin,İrmik,Balık,Yemek|kolay
+KAMYON|Yük,Taşımak,Büyük,Araba,Şoför|kolay
+TIR|Kamyon,Büyük,Yük,Uzun,Dorse|kolay
+TRAKTÖR|Tarla,Çiftçi,Sürmek,Araç,Köy|kolay
+TAKSİ|Sarı,Araba,Yolcu,Para,Metre|kolay
+MİNİBÜS|Yolcu,Dolmuş,Toplu,Taşıma,Para|kolay
+KARAVAN|Tatil,Ev,Araba,Çekmek,Kamp|kolay
+BİSİKLET|İki,Tekerlek,Pedal,Sürmek,Denge|kolay
+MOTOSİKLET|İki,Tekerlek,Motor,Hız,Kask|kolay
+HELİKOPTER|Uçmak,Hava,Pervane,Pilot,Gökyüzü|kolay
+UÇAK|Hava,Uçmak,Yolcu,Pilot,Havalimanı|kolay
+MARANGOZ|Ahşap,Tahta,Kesmek,Mobilya,Usta|orta
+TESİSATÇI|Su,Boru,Tamir,Musluk,Banyo|orta
+ELEKTRİKÇİ|Kablo,Akım,Priz,Tamir,Işık|orta
+BOYACI|Duvar,Renk,Fırça,Sürmek,Rulo|orta
+ŞOFÖR|Araba,Otobüs,Kullanmak,Yolcu,Direksiyon|orta
+KAPTAN|Gemi,Deniz,Yolcu,Uçak,Dümenci|orta
+PİLOT|Uçak,Hava,Uçmak,Yolcu,Kaptan|orta
+BEKÇİ|Gece,Korumak,Güvenlik,Düdük,Nöbet|orta
+AŞÇI|Yemek,Mutfak,Lokanta,Kepçe,Şapka|orta
+GARSON|Lokanta,Sipariş,Yemek,Tepsi,Bahşiş|orta
+KASİYER|Market,Para,Ödemek,Fiş,Hesap|orta
+EMLAKÇI|Ev,Satmak,Kiralamak,Dükkan,Komisyon|orta
+SİGORTACI|Kaza,Para,Poliçe,Araba,Güvence|orta
+BANKACI|Para,Kredi,Hesap,Vezne,Şube|orta
+MUHASEBECİ|Para,Hesap,Fatura,Defter,Şirket|orta
+AVUKAT|Mahkeme,Hakim,Savunma,Hukuk,Dava|orta
+HAKİM|Mahkeme,Karar,Tokmak,Adalet,Avukat|orta
+SAVCI|Mahkeme,İddianame,Avukat,Hukuk,Ceza|orta
+POLİS|Suç,Karakol,Hırsız,Silah,Güvenlik|orta
+ASKER|Ordu,Savaş,Silah,Nöbet,Vatan|orta
+İNDİRİM|Fiyat,Ucuz,Kampanya,Düşmek,Alışveriş|orta
+KREDİ|Banka,Borç,Para,Faiz,Çekmek|orta
+FAİZ|Banka,Para,Kredi,Oran,Borç|orta
+FATURA|Ödemek,Kağıt,Elektrik,Su,Aylık|orta
+SÖZLEŞME|İmza,Kağıt,Anlaşma,Belge,Resmi|orta
+İMZA|Kağıt,Kalem,Atmak,İsim,Belge|orta
+MÜHÜR|Basmak,Damga,Resmi,Kağıt,Mürekkep|orta
+YAZILIM|Bilgisayar,Kod,Program,Donanım,Uygulama|orta
+DONANIM|Bilgisayar,Parça,Ekran,Klavye,Fiziksel|orta
+SUNUCU|Program,Televizyon,Bilgisayar,Ağ,Server|orta
+ŞİFRE|Gizli,Karakter,Girmek,Güvenlik,Bilgisayar|orta
+EKRAN|Bilgisayar,Televizyon,Görüntü,Cam,Bakmak|orta
+KLAVYE|Tuş,Yazmak,Bilgisayar,Harf,Fare|orta
+MODEM|İnternet,Bağlantı,Ağ,Kablo,Wifi|orta
+TOPLANTI|Şirket,Konuşmak,Masa,Görüşme,İş|orta
+SEMİNER|Konferans,Bilgi,Dinlemek,Konuşmacı,Toplantı|orta
+KONFERANS|Seminer,Toplantı,Konuşmacı,Dinleyici,Salon|orta
+KONGRE|Büyük,Toplantı,Parti,Seçim,Delegeler|orta
+FUAR|Sergi,Ürün,Tanıtım,Stand,Şirket|orta
+SERGİ|Resim,Sanat,Göstermek,Tablo,Müze|orta
+KONSER|Müzik,Şarkıcı,Canlı,Sahne,Dinleyici|orta
+TİYATRO|Sahne,Oyun,Oyuncu,Perde,Alkış|orta
+MUTLULUK|Sevinç,Gülmek,Duygu,Hüzün,Gözyaşı|orta
+ÜZÜNTÜ|Ağlamak,Gözyaşı,Duygu,Mutluluk,Hüzün|orta
+ÖFKE|Kızmak,Sinir,Bağırmak,Duygu,Sakin|orta
+KORKU|Duygu,Ürkmek,Karanlık,Titremek,Cesaret|orta
+ŞAŞKINLIK|Duygu,Beklenmedik,Sürpriz,Ağzı Açık,Göz|orta
+İĞRENME|Mide,Bulanmak,Duygu,Kötü,Kusmak|orta
+GURUR|Övünmek,Kibir,Başarı,Duygu,Millet|orta
+UTANÇ|Kızarmak,Yüz,Duygu,Ayıp,Saklanmak|orta
+HEYECAN|Kalp,Çarpmak,Duygu,Beklemek,Korku|orta
+SIKINTI|Stres,Daralmak,Can,Duygu,Patlamak|orta
+OKUMAK|Kitap,Dergi,Yazı,Göz,Sayfa|orta
+YAZMAK|Kalem,Kağıt,Okumak,Defter,Harf|orta
+ÇİZMEK|Resim,Kalem,Kağıt,Boyamak,Sanat|orta
+BOYAMAK|Renk,Fırça,Resim,Duvar,Çizmek|orta
+ŞARKI SÖYLEMEK|Müzik,Ses,Mikrofon,Dinlemek,Nota|orta
+DANS ETMEK|Müzik,Ritim,Hareket,Bale,Oynamak|orta
+SPOR YAPMAK|Sağlık,Egzersiz,Koşmak,Terlemek,Kas|orta
+YÜZMEK|Su,Havuz,Deniz,Kulaç,Mayo|orta
+KOŞMAK|Hızlı,Adım,Spor,Yürümek,Terlemek|orta
+FUTBOL|Top,Maç,Gol,Saha,Kale|orta
+BASKETBOL|Top,Pota,Sayı,Maç,Zıplamak|orta
+VOLEYBOL|Top,File,Smaç,Servis,Manşet|orta
+TENİS|Raket,Top,Kort,File,Vurmak|orta
+MASA TENİSİ|Raket,Küçük,Top,File,Pinpon|orta
+ATLETİZM|Koşu,Spor,Olimpiyat,Yarış,Atlamak|orta
+BOKS|Eldiven,Ring,Dövüş,Yumruk,Raunt|orta
+GÜREŞ|Spor,Minder,Tuş,Pehlivan,Ata|orta
+HALTER|Spor,Ağırlık,Kaldırmak,Demir,Güç|orta
+POP|Müzik,Şarkı,Popüler,Hareketli,Tarkan|orta
+ROCK|Müzik,Gitar,Sert,Bateri,Elektro|orta
+RAP|Müzik,Hızlı,Söylemek,Kafiye,Ceza|orta
+CAZ|Müzik,Saksafon,Trompet,Amerika,Sakin|orta
+KLASİK|Müzik,Beethoven,Mozart,Eski,Piyano|orta
+ARABESK|Müzik,Acı,Müslüm Gürses,İbrahim Tatlıses,Damar|orta
+HALK MÜZİĞİ|Türkü,Bağlama,Saz,Yöre,Müzik|orta
+SANAT MÜZİĞİ|Türk,Fasıl,Makam,Ud,Zeki Müren|orta
+AKUSTİK|Müzik,Gitar,Ses,Elektrik,Doğal|orta
+YÖNETMEN|Sinema,Film,Kamera,Motor,Oyuncu|orta
+SENARİST|Film,Yazmak,Hikaye,Metin,Dizi|orta
+KAMERA|Çekmek,Fotoğraf,Video,Film,Kayıt|orta
+SAHNE|Tiyatro,Oyun,Konser,Oyuncu,Perde|orta
+VİZYON|Film,Sinema,Tarih,Göstermek,Gelecek|orta
+GİŞE|Bilet,Sinema,Para,Satmak,İzleyici|orta
+SEANS|Sinema,Saat,Film,İzlemek,Bilet|orta
+HARİTA|Yön,Coğrafya,Ülke,Çizim,Pusula|orta
+PUSULA|Yön,Kuzey,Harita,Gemi,İbre|orta
+ÖLÇEK|Harita,Küçültmek,Oran,Büyüklük,Mesafe|orta
+KOORDİNAT|Harita,Yer,Enlem,Boylam,Bulmak|orta
+ENLEM|Harita,Paralel,Ekvator,Çizgi,Dünya|orta
+BOYLAM|Harita,Meridyen,Çizgi,Zaman,Kutup|orta
+EKVATOR|Dünya,Ortası,Sıcak,Çizgi,Enlem|orta
+KUTUP|Dünya,Ayı,Buzul,Soğuk,Kuzey|orta
+YARIMKÜRE|Dünya,Kuzey,Güney,Bölmek,Ekvator|orta
+KITA|Avrupa,Asya,Kara,Dünya,Okyanus|orta
+SİS|Hava,Pus,Görmek,Duman,Bulut|orta
+ÇİY|Su,Damlacık,Sabah,Yaprak,Hava|orta
+KIRAĞI|Buz,Soğuk,Kış,Yaprak,Beyaz|orta
+AYAZ|Soğuk,Kış,Rüzgar,Hava,Dondurucu|orta
+LODOS|Rüzgar,Sıcak,Yön,Hava,Esme|orta
+POYRAZ|Rüzgar,Soğuk,Kuzey,Esme,Hava|orta
+FIRTINA|Rüzgar,Hava,Şiddetli,Yağmur,Kopmak|orta
+KASIRGA|Rüzgar,Fırtına,Hortum,Yıkıcı,Afet|orta
+HORTUM|Rüzgar,Dönmek,Fırtına,Havaya,Çekmek|orta
+KALİTE|Standart,İyi,Kötü,Mal,Ürün|orta
+STANDART|Ölçü,Kural,Normal,Kalite,Belirlemek|orta
+ÜRETİM|Fabrika,Yapmak,Mal,Tüketim,Sanayi|orta
+TÜKETİM|Üretim,Mal,Kullanmak,Almak,Ekonomi|orta
+DAĞITIM|Kargo,Göndermek,Ürün,Lojistik,Ulaşım|orta
+PAZARLAMA|Satış,Reklam,Müşteri,Ürün,Şirket|orta
+REKLAM|Televizyon,Satmak,Tanıtım,Ürün,Pazarlama|orta
+SATIŞ|Para,Vermek,Almak,Müşteri,Mağaza|orta
+MÜŞTERİ|Satın Almak,Mağaza,Kişi,Satıcı,Para|orta
+MEMNUNİYET|Müşteri,Mutlu,Hizmet,Şikayet,Beğenmek|orta
+VOLKAN|Dağ,Lav,Patlamak,Yanardağ,Ateş|orta
+TSUNAMİ|Deprem,Deniz,Dalga,Japonya,Felaket|orta
+ÇIĞ|Kar,Dağ,Düşmek,Tehlike,Kış|orta
+HEYELAN|Toprak,Kaymak,Yağmur,Afet,Dağ|orta
+SEL|Su,Taşmak,Yağmur,Afet,Dere|orta
+EROZYON|Toprak,Aşınmak,Ağaç,Su,Rüzgar|orta
+ÇEVRE|Doğa,Koruma,Kirlilik,Etraf,Yeşil|orta
+KİRLİLİK|Çevre,Çöp,Hava,Su,Temiz|orta
+ATIK|Çöp,Fabrika,Çevre,Kirlilik,Geri Dönüşüm|orta
+BEYİN|Kafa,Düşünmek,Akıl,Zeka,Organ|orta
+AKCİĞER|Nefes,Nefes Almak,Hava,Organ,Göğüs|orta
+KARACİĞER|Organ,Vücut,İç,Hastalık,Alkol|orta
+BÖBREK|Organ,Su,Süzmek,İki,Vücut|orta
+BAĞIRSAK|Organ,Sindirim,Mide,Vücut,Uzun|orta
+MİDE|Organ,Yemek,Hazmetmek,Karın,Ağrı|orta
+PANKREAS|Organ,İnsülin,Şeker,Vücut,İç|orta
+DALAK|Organ,Vücut,İç,Kan,Sol|orta
+SAFRA KESESİ|Organ,Mide,Vücut,Sıvı,Taş|orta
+EMPATİ|Duygu,Anlamak,Yerine Koymak,Başkası,His|zor
+SEMPATİ|Duygu,Sevmek,Antipati,Hoşlanmak,Cana Yakın|zor
+ANTİPATİ|Duygu,Sempati,Sevmemek,İtici,Soğuk|zor
+APATİK|Duygu,Hissiz,Tepkisiz,İlgisiz,Boşvermiş|zor
+KARİZMA|Etkileyici,Görünüş,Çekici,Lider,Duruş|zor
+AURA|Enerji,Hale,Etki,Karizma,Renk|zor
+MİSYON|Görev,Amaç,Vizyon,Şirket,Hedef|zor
+İNOVASYON|Yenilik,Buluş,Gelişim,Teknoloji,Fikir|zor
+STATÜKO|Mevcut,Durum,Değişim,Koruma,Düzen|zor
+EPİSTEMOLOJİ|Bilgi,Felsefe,Doğru,Kaynak,Teori|zor
+ONTOLOJİ|Varlık,Felsefe,Nedir,Gerçek,Bilim|zor
+ETİK|Ahlak,Kurallar,Doğru,Yanlış,Felsefe|zor
+ESTETİK|Güzellik,Sanat,Felsefe,Görünüm,Ameliyat|zor
+MANTIK|Akıl,Düşünce,Felsefe,Doğru,Kural|zor
+METAFİZİK|Fizik,Ötesi,Felsefe,Ruh,Doğaüstü|zor
+DOGMATİZM|Sorgulamamak,Kabul Etmek,Kesin,İnanç,Felsefe|zor
+PRAGMATİZM|Fayda,Yarar,Felsefe,Sonuç,Uygulama|zor
+NİHİLİZM|Hiççilik,Felsefe,Anlam,Reddetmek,Değer|zor
+VAROLUŞÇULUK|Sartre,İnsan,Özgürlük,Felsefe,Anlam|zor
+MEVZUAT|Hukuk,Kanun,Yasa,Kural,Yönetmelik|zor
+İÇTİHAT|Karar,Mahkeme,Emsal,Hukuk,Yorum|zor
+EMSAL|Örnek,Karar,Mahkeme,Aynı,Benzer|zor
+TEMYİZ|Karar,Mahkeme,İtiraz,Yargıtay,Bozmak|zor
+YARGITAY|Mahkeme,Temyiz,Yüksek,Hukuk,Karar|zor
+DANIŞTAY|Mahkeme,Devlet,İdari,Yüksek,Karar|zor
+SAYIŞTAY|Hesap,Denetim,Devlet,Mahkeme,Para|zor
+BERAAT|Suçsuz,Ceza,Mahkeme,Kurtulmak,Karar|zor
+MAHKUMİYET|Ceza,Hapis,Mahkeme,Suçlu,Karar|zor
+İNFAZ|Ceza,Uygulamak,Hapis,Yatmak,Süre|zor
+DEFLASYON|Fiyat,Düşmek,Enflasyon,Ekonomi,Para|zor
+DEVALÜASYON|Para,Değer,Düşmek,Döviz,Ekonomi|zor
+REVALÜASYON|Para,Değer,Artmak,Devalüasyon,Ekonomi|zor
+RESESYON|Ekonomi,Durgunluk,Küçülmek,Kriz,Büyüme|zor
+STAGNASYON|Durgunluk,Ekonomi,Büyüme,İşsizlik,Sabit|zor
+STAGFLASYON|Enflasyon,Stagnasyon,Ekonomi,Kriz,Durgunluk|zor
+CARİ AÇIK|Ekonomi,İthalat,İhracat,Fark,Eksi|zor
+GAYRİSAFİ YURTİÇİ HASILA|Ekonomi,Üretim,Toplam,Büyüme,Milli Gelir|zor
+KUANTUM|Fizik,Parçacık,Atom,Teori,Mekanik|zor
+GÖRELİLİK|Einstein,Fizik,Zaman,Mekan,Teori|zor
+ENTROPİ|Düzensizlik,Fizik,Termodinamik,Kaos,Enerji|zor
+TERMODİNAMİK|Isı,Enerji,Fizik,Yasa,Hareket|zor
+EVRİM|Darwin,Değişim,Canlı,Biyoloji,Teori|zor
+MUTASYON|Gen,Değişim,DNA,Kalıtsal,X-Men|zor
+MODİFİKASYON|Değişim,Kalıtsal Değil,Çevre,Özellik,Gen|zor
+ADAPTASYON|Uyum,Çevre,Yaşamak,Evrim,Canlı|zor
+GENETİK|Kalıtım,DNA,Biyoloji,Hücre,Miras|zor
+DNA|Gen,Sarmal,Kromozom,Hücre,Kalıtım|zor
+ETEK|Zil,Çalmak,Deyim,Sevinmek,Heyecan|zor
+KÜP|Binmek,Deyim,Öfke,Sinirlenmek,Kızmak|zor
+AĞIZ|Kulak,Varmak,Deyim,Sevinmek,Gülmek|zor
+GÖZ|Girmek,Deyim,Beğenilmek,Başarı,Takdir|zor
+KULAK|Misafir,Deyim,Dinlemek,Gizli,Duymak|zor
+BURUN|Kıvırmak,Deyim,Beğenmemek,Küçümsemek,İstememek|zor
+DİŞ|Bilemek,Deyim,Kızmak,Öfke,İntikam|zor
+AĞAÇ|Yaşken,Eğilir,Atasözü,Eğitim,Çocuk|zor
+DEMİR|İşleyen,Işıldar,Atasözü,Çalışmak,Pas|zor
+RÜZGAR|Eken,Fırtına,Biçer,Atasözü,Kötülük|zor
+AVANGART|Sanat,Öncü,Yenilikçi,Akım,İleri|zor
+RÖNESANS|Yeniden Doğuş,Sanat,İtalya,Avrupa,Tarih|zor
+BAROK|Sanat,Mimar,Şatafatlı,Süslü,Avrupa|zor
+GOTİK|Sanat,Mimar,Karanlık,Katedral,Ortaçağ|zor
+KLASİSİZM|Sanat,Akım,Kural,Antik,Uyum|zor
+ROMANTİZM|Sanat,Akım,Duygu,Hayal,Klasisizm|zor
+REALİZM|Gerçekçilik,Sanat,Akım,Hayat,Doğru|zor
+NATÜRALİZM|Doğalcılık,Sanat,Akım,Gerçek,Bilim|zor
+EMPRESYONİZM|İzlenimcilik,Sanat,Akım,Boya,Ressam|zor
+KÜBİZM|Sanat,Akım,Picasso,Geometrik,Şekil|zor
+BİLİNÇALTI|Psikoloji,Rüya,Freud,Gizli,Düşünce|zor
+EGO|Benlik,Psikoloji,Bencil,Süperego,İd|zor
+SÜPEREGO|Psikoloji,Ahlak,Ego,Toplum,Kural|zor
+İD|Psikoloji,İlkel,İstek,Ego,Freud|zor
+KOMPLEKS|Aşağılık,Psikoloji,Sorun,Karmaşık,Duygu|zor
+PANİK ATAK|Korku,Psikoloji,Hastalık,Nefes,Kriz|zor
+DEPRESYON|Psikoloji,Hastalık,Üzüntü,Mutsuz,İlaç|zor
+ŞİZOFRENİ|Psikoloji,Hastalık,Hayal,Gerçek,Akıl|zor
+DEMOKRASİ|Yönetim,Halk,Seçim,Oy,Sistem|zor
+CUMHURİYET|Yönetim,Başkan,Halk,Seçim,Atatürk|zor
+MONARŞİ|Kral,Yönetim,Tek,Aile,Padişah|zor
+OLİGARŞİ|Yönetim,Grup,Zümre,Azınlık,Sistem|zor
+TEOKRASİ|Din,Yönetim,Kurallar,Sistem,Tanrı|zor
+OTOKRASİ|Yönetim,Tek Kişi,Diktatör,Güç,Sistem|zor
+DİKTATÖRLÜK|Baskı,Yönetim,Tek Kişi,Zorba,Özgürlük|zor
+KAPİTALİZM|Ekonomi,Para,Sistem,Özel,Kar|zor
+SOSYALİZM|Sistem,Eşitlik,Devlet,Ekonomi,Toplum|zor
+KOMÜNİZM|Sistem,Eşitlik,Sınıfsız,Karl Marx,Sovyet|zor
+SEMPTOM|Belirti,Hastalık,Tıp,Doktor,İşaret|zor
+TEŞHİS|Tanı,Hastalık,Doktor,Koymak,Bulmak|zor
+TANI|Teşhis,Hastalık,Doktor,Koymak,Bulmak|zor
+TEDAVİ|İyileştirmek,Doktor,İlaç,Hasta,Hastane|zor
+TERAPİ|Tedavi,Psikoloji,Konuşmak,Seans,Doktor|zor
+REHABİLİTASYON|İyileştirme,Merkez,Tedavi,Fizik,Hasta|zor
+REÇETE|İlaç,Doktor,Eczane,Yazmak,Kağıt|zor
+PROSPEKTÜS|İlaç,Kağıt,Okumak,Yan Etki,Kutu|zor
+ENDİKASYON|Tıp,İlaç,Kullanım,Hastalık,Belirti|zor
+ALGORİTMA|Bilgisayar,Matematik,Kod,Adım,Mantık|zor
+VERİTABANI|Bilgi,Saklamak,Bilgisayar,Sistem,Tablo|zor
+ŞİFRELEME|Gizli,Kriptografi,Bilgisayar,Güvenlik,Kod|zor
+KODLAMA|Yazılım,Bilgisayar,Program,Yazmak,Düşünmek|zor
+MAKİNE ÖĞRENİMİ|Yapay Zeka,Veri,Bilgisayar,Algoritma,Öğrenmek|zor
+DERİN ÖĞRENME|Yapay Zeka,Sinir Ağı,Bilgisayar,Model,Algoritma|zor
+BULUT BİLİŞİM|İnternet,Veri,Saklamak,Sistem,Sunucu|zor
+SİBER GÜVENLİK|İnternet,Koruma,Saldırı,Hacker,Bilgisayar|zor
+HACKER|Bilgisayar,Korsan,Şifre,Çalmak,Siber|zor
+METAFOR|Benzetme,Edebiyat,Söz,Sanat,Mecaz|zor
+TEŞBİH|Benzetme,Edebiyat,Sanat,Gibi,Söz|zor
+MECAZ|Anlam,Gerçek,Edebiyat,Söz,Sanat|zor
+KİNAYE|Dokundurma,Söz,Edebiyat,Ters,Sanat|zor
+TARİZ|İğneleme,Edebiyat,Söz,Ters,Sanat|zor
+MÜBALAĞA|Abartma,Edebiyat,Söz,Sanat,Fazla|zor
+TECAHÜLÜARİF|Bilmezlikten Gelme,Edebiyat,Söz,Sanat,Şiir|zor
+HÜSNÜTALİL|Güzel Neden,Edebiyat,Söz,Sanat,Şiir|zor
+ALİTERASYON|Sessiz Harf,Tekrar,Edebiyat,Şiir,Sanat|zor
+ASONANS|Sesli Harf,Tekrar,Edebiyat,Şiir,Sanat|zor
+MÜTEKABİLİYET|Karşılıklılık,İlke,Devlet,Uluslararası,Eşitlik|zor
+MUVAFAKATNAME|İzin,Belge,Onay,Resmi,Kağıt|zor
+TAAHHÜTNAME|Söz,Belge,İmza,Resmi,Üstlenmek|zor
+İHTİYATİ|Tedbir,Önlem,Karar,Mahkeme,Hukuk|zor
+TEZAHÜR|Belirmek,Ortaya Çıkmak,Görünmek,Sonuç,Oluşmak|zor
+İNHİSAR|Tekel,Sahip Olmak,Pazar,Satış,Kurum|zor
+AFAKİ|Nesnel Olmayan,Gereksiz,Boş,Söz,Havadan|zor
+ZIMNİ|Kapalı,Gizli,İma,Anlaşma,Üstü|zor
+İRRASYONEL|Akıldışı,Mantıksız,Düşünce,Duygu,Sayı|zor
+RASYONEL|Akılcı,Mantıklı,Düşünce,Karar,Doğru|zor
+KRONOLOJİK|Zaman,Sıra,Tarih,Dizilim,Olay|zor
+HİYERARŞİ|Sıra,Aşama,Makam,Üst,Alt|zor
+BÜROKRASİ|Devlet,Memur,Kırtasiye,Resmi,İşlem|zor
+ANAYASA|Temel,Kanun,Devlet,Hukuk,Kitap|zor
+KANUN|Yasa,Hukuk,Kural,Meclis,Madde|zor
+YASA|Kanun,Hukuk,Kural,Meclis,Madde|zor
+YÖNETMELİK|Kurallar,Kanun,Resmi,Uygulama,Bakanlık|zor
+TÜZÜK|Kurallar,Dernek,Kurum,Yönetmelik,Resmi|zor
+KARARNAME|Cumhurbaşkanı,Resmi,Yasa,Hüküm,Bakan|zor
+GENELGE|Emir,Yazı,Kurum,Resmi,Duyuru|zor
+SÖYLENTİ|Dedikodu,Haber,Duyum,Yalan,Kulaktan|zor
+EFSANE|Hikaye,Mitoloji,Gerçek,Eski,Anlatı|zor
+MİTOLOJİ|Yunan,Tanrı,Efsane,Tarih,Zeus|zor
+DESTAN|Tarih,Kahraman,Savaş,Şiir,Uzun|zor
+MASAL|Çocuk,Uyumak,Cadı,Prens,Hikaye|zor
+FABL|Hayvan,Hikaye,Ders,Masal,Konuşmak|zor
+FIKRA|Komik,Gülmek,Nasreddin Hoca,Temel,Anlatmak|zor
+ÖYKÜ|Hikaye,Kısa,Yazar,Roman,Edebiyat|zor
+DENEME|Yazı,Yazar,Düşünce,Edebiyat,Makale|zor
+MAKALE|Yazı,Bilimsel,Gazete,Dergi,Bilgi|zor
+ELEŞTİRİ|Tenkit,Yorum,Yazar,Kitap,Film|zor
+RÖPORTAJ|Soru,Cevap,Gazeteci,Ünlü,Konuşmak|zor
+BİYOGRAFİ|Hayat,Yazı,Anlatmak,Kişi,Kitap|zor
+OTOBİYOGRAFİ|Kendi,Hayat,Yazmak,Biyografi,Kitap|zor
+ANI|Geçmiş,Hatıra,Yaşanan,Yazmak,Kitap|zor
+GÜNLÜK|Her Gün,Yazmak,Defter,Sır,Hatıra|zor
+MEKTUP|Yazmak,Zarf,Posta,Göndermek,Pul|zor
+DRAM|Tiyatro,Üzücü,Ağlamak,Oyun,Sahne|zor
+KOMEDİ|Gülmek,Tiyatro,Eğlenceli,Oyun,Film|zor
+TRAJEDİ|Tiyatro,Acı,Üzücü,Son,Oyun|zor

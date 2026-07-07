@@ -87,5 +87,16 @@ service cloud.firestore {
     match /polls/{id} {
       allow read, write: if isSignedIn();
     }
+
+    // Tabu: canlı oyun senkronizasyonu
+    match /tabu/{docId} {
+      allow read, write: if isSignedIn();
+    }
+    
+    // Uygulama Genel Ayarları (Sadece admin yazabilir, herkes okur)
+    match /settings/{docId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
   }
 }

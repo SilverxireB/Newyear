@@ -2,19 +2,23 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
 import { ensureFamiliesSeeded, renameFamily, subscribeFamilies } from '../lib/families.js'
 import { setUserFamily, setUserRole, subscribeUsers } from '../lib/users.js'
+import { subscribeSettings, setTabuAdminOnly } from '../lib/settings.js'
 
 export default function Admin() {
   const { user } = useAuth()
   const [families, setFamilies] = useState([])
   const [users, setUsers] = useState([])
+  const [settings, setSettings] = useState({ tabuAdminOnly: false })
 
   useEffect(() => {
     ensureFamiliesSeeded().catch(() => {})
     const u1 = subscribeFamilies(setFamilies)
     const u2 = subscribeUsers(setUsers)
+    const u3 = subscribeSettings(setSettings)
     return () => {
       u1()
       u2()
+      u3()
     }
   }, [])
 
@@ -28,6 +32,26 @@ export default function Admin() {
           Aile adlarını, kişilerin ailesini ve rolleri düzenle.
         </p>
       </div>
+
+      <section className="card p-4">
+        <h2 className="font-display font-bold mb-3">Oyun Ayarları</h2>
+        <div className="flex items-center justify-between bg-night-900/50 border border-white/10 p-3 rounded-xl">
+          <div>
+            <div className="text-sm font-medium">Tabu Başlatma Yetkisi</div>
+            <div className="text-xs text-slate-500">Oyunu sadece yöneticiler mi başlatabilsin? (Kelime hilesini önler)</div>
+          </div>
+          <button
+            onClick={() => setTabuAdminOnly(!settings.tabuAdminOnly)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+              settings.tabuAdminOnly
+                ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+            }`}
+          >
+            {settings.tabuAdminOnly ? 'Sadece Yönetici' : 'Herkes'}
+          </button>
+        </div>
+      </section>
 
       <section className="card p-4">
         <h2 className="font-display font-bold mb-3">Aileler</h2>
