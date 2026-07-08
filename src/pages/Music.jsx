@@ -24,6 +24,32 @@ function fmt(sec) {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
 }
 
+// Kısa, sessiz bir WAV üretir (arka planda ses oturumunu ayakta tutmak için).
+function makeSilentWavUrl() {
+  const rate = 8000
+  const n = rate // 1 sn
+  const buf = new ArrayBuffer(44 + n)
+  const v = new DataView(buf)
+  const str = (o, s) => {
+    for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i))
+  }
+  str(0, 'RIFF')
+  v.setUint32(4, 36 + n, true)
+  str(8, 'WAVE')
+  str(12, 'fmt ')
+  v.setUint32(16, 16, true)
+  v.setUint16(20, 1, true)
+  v.setUint16(22, 1, true)
+  v.setUint32(24, rate, true)
+  v.setUint32(28, rate, true)
+  v.setUint16(32, 1, true)
+  v.setUint16(34, 8, true)
+  str(36, 'data')
+  v.setUint32(40, n, true)
+  for (let i = 0; i < n; i++) v.setUint8(44 + i, 128) // 8-bit sessizlik
+  return URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }))
+}
+
 export default function Music() {
   const { profile, user, admin } = useAuth()
   const uid = user?.uid
@@ -408,6 +434,29 @@ function PlayerEngine({ now, isPlaying, onEnded, onCredit, onPlay, onPause, onNe
 
   // Ekranı uyanık tut → çalan cihazda müzik kesilmesin.
   useWakeLock(true)
+
+  // Sessiz ses döngüsü: arka planda ses oturumunu ayakta tutar (Android'de yardımcı).
+  useEffect(() => {
+    let url
+    let audio
+    try {
+      url = makeSilentWavUrl()
+      audio = new Audio(url)
+      audio.loop = true
+      audio.volume = 1 // örnekler sessiz, ses çıkmaz
+      audio.play().catch(() => {})
+    } catch {
+      // yoksay
+    }
+    return () => {
+      try {
+        audio && audio.pause()
+      } catch {
+        // yoksay
+      }
+      if (url) URL.revokeObjectURL(url)
+    }
+  }, [])
 
   // Oynatıcıyı bir kez oluştur + her saniye ilerlemeyi kontrol et (2/3 → puan).
   useEffect(() => {
