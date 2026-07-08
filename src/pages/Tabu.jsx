@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
+import { useWakeLock } from '../lib/wakeLock.js'
 import { TABU_DECK } from '../data/tabuDeck.js'
 import { subscribeSettings } from '../lib/settings.js'
 import {
@@ -32,6 +33,7 @@ function shuffle(arr) {
 }
 
 export default function Tabu() {
+  useWakeLock()
   const { user } = useAuth()
   const [game, setGame] = useState(null)
   const [settings, setSettings] = useState({ tabuAdminOnly: false })

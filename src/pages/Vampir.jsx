@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
+import { useWakeLock } from '../lib/wakeLock.js'
 import { subscribeUsers } from '../lib/users.js'
 import { dealRoles, resetGame, subscribeGame, subscribeMyRole } from '../lib/vampir.js'
 
 export default function Vampir() {
+  useWakeLock()
   const { user, admin } = useAuth()
   const [game, setGame] = useState(undefined)
   const [myRole, setMyRole] = useState(null)

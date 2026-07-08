@@ -13,6 +13,7 @@ import {
   subscribeQueue,
   subscribeStats,
 } from '../lib/music.js'
+import { useWakeLock } from '../lib/wakeLock.js'
 
 export default function Music() {
   const { profile, user, admin } = useAuth()
@@ -177,7 +178,15 @@ export default function Music() {
 
         {/* Gizli oynatıcı: video görünmez, sadece ses. */}
         {now && isPlayer && (
-          <PlayerEngine now={now} isPlaying={isPlaying} onEnded={() => advance(now)} onCredit={credit} />
+          <PlayerEngine
+            now={now}
+            isPlaying={isPlaying}
+            onEnded={() => advance(now)}
+            onCredit={credit}
+            onPlay={() => setPlaying(true)}
+            onPause={() => setPlaying(false)}
+            onNext={() => advance(now)}
+          />
         )}
       </section>
 
@@ -284,19 +293,28 @@ export default function Music() {
 }
 
 // YouTube ses motoru — ekran dışında, görünmez. Sadece müzik çalar.
-function PlayerEngine({ now, isPlaying, onEnded, onCredit }) {
+function PlayerEngine({ now, isPlaying, onEnded, onCredit, onPlay, onPause, onNext }) {
   const hostRef = useRef(null)
   const playerRef = useRef(null)
   const currentIdRef = useRef(null)
   const creditedRef = useRef(null) // puan verilmiş kuyruk öğesinin id'si
   const onEndedRef = useRef(onEnded)
   const onCreditRef = useRef(onCredit)
+  const onPlayRef = useRef(onPlay)
+  const onPauseRef = useRef(onPause)
+  const onNextRef = useRef(onNext)
   const nowRef = useRef(now)
   const isPlayingRef = useRef(isPlaying)
   onEndedRef.current = onEnded
   onCreditRef.current = onCredit
+  onPlayRef.current = onPlay
+  onPauseRef.current = onPause
+  onNextRef.current = onNext
   nowRef.current = now
   isPlayingRef.current = isPlaying
+
+  // Ekranı uyanık tut → çalan cihazda müzik kesilmesin.
+  useWakeLock(true)
 
   // Oynatıcıyı bir kez oluştur + her saniye ilerlemeyi kontrol et (2/3 → puan).
   useEffect(() => {
@@ -374,20 +392,10 @@ function PlayerEngine({ now, isPlaying, onEnded, onCredit }) {
     else p.pauseVideo()
   }, [isPlaying, now?.videoId])
 
-  // Ekranı uyanık tut (Wake Lock) → telefon koyulunca müzik durmasın.
-  // Ayrıca sekmeye dönünce çalması gerekiyorsa devam ettir.
+  // Sekmeye dönünce çalması gerekiyorsa devam ettir.
   useEffect(() => {
-    let lock = null
-    const request = async () => {
-      try {
-        if ('wakeLock' in navigator) lock = await navigator.wakeLock.request('screen')
-      } catch {
-        // yoksay
-      }
-    }
     const onVis = () => {
       if (document.visibilityState !== 'visible') return
-      request()
       const p = playerRef.current
       if (p && p.playVideo && isPlayingRef.current) {
         try {
@@ -397,15 +405,53 @@ function PlayerEngine({ now, isPlaying, onEnded, onCredit }) {
         }
       }
     }
-    request()
     document.addEventListener('visibilitychange', onVis)
-    return () => {
-      document.removeEventListener('visibilitychange', onVis)
+    return () => document.removeEventListener('visibilitychange', onVis)
+  }, [])
+
+  // Medya oturumu: bildirim / kilit ekranı kontrolleri + arka planda çalma.
+  useEffect(() => {
+    if (!('mediaSession' in navigator) || !now) return
+    try {
+      navigator.mediaSession.metadata = new window.MediaMetadata({
+        title: now.title || 'Müzik',
+        artist: now.author || 'Newyear Traitors',
+        album: 'Newyear Traitors 🎵',
+        artwork: [
+          { src: `https://img.youtube.com/vi/${now.videoId}/mqdefault.jpg`, sizes: '320x180', type: 'image/jpeg' },
+          { src: `https://img.youtube.com/vi/${now.videoId}/hqdefault.jpg`, sizes: '480x360', type: 'image/jpeg' },
+        ],
+      })
+    } catch {
+      // yoksay
+    }
+  }, [now?.videoId, now?.title])
+
+  useEffect(() => {
+    if (!('mediaSession' in navigator)) return
+    try {
+      navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused'
+    } catch {
+      // yoksay
+    }
+  }, [isPlaying])
+
+  useEffect(() => {
+    if (!('mediaSession' in navigator)) return undefined
+    const set = (action, handler) => {
       try {
-        lock && lock.release()
+        navigator.mediaSession.setActionHandler(action, handler)
       } catch {
-        // yoksay
+        // desteklenmeyen aksiyon
       }
+    }
+    set('play', () => onPlayRef.current?.())
+    set('pause', () => onPauseRef.current?.())
+    set('nexttrack', () => onNextRef.current?.())
+    return () => {
+      set('play', null)
+      set('pause', null)
+      set('nexttrack', null)
     }
   }, [])
 

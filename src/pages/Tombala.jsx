@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
+import { useWakeLock } from '../lib/wakeLock.js'
 import { subscribeFamilies } from '../lib/families.js'
 import { formatTL } from '../lib/expenses.js'
 import {
@@ -17,6 +18,7 @@ import {
 } from '../lib/tombala.js'
 
 export default function Tombala() {
+  useWakeLock()
   const { user, profile, admin } = useAuth()
   const [game, setGame] = useState(undefined)
   const [cards, setCards] = useState([])
