@@ -22,15 +22,21 @@
 - **Tombala:** kartlı (bahisli, 6 karttan seçim, kart no, klasik renkli görünüm) + sadece-numara modu; otomatik çekme 3/5/10 sn; çinko/tombala butonları; kazananda oyun OTOMATİK BİTMEZ — host "Bitir & masrafa ekle" der (finalizeGame → ledger); ödül %20/%20/%60, kazanan yoksa havuz iptal (sıfır toplam)
 - **Tabu:** gerçek zamanlı çoklu oyuncu (`src/lib/tabu.js`, Firestore `tabu/current`), anlatıcı/denetçi modu, pause, 3 pas sonrası pas=tabu, admin-only başlatma ayarı (`settings`), ~600 kart `src/data/tabuDeck.js` (level 1/2/3) — kullanıcı 1000+ istiyor, parti parti büyüt
 - **Vampir Köylü:** admin oyuncu seçer + vampir sayısı (varsayılan 2), roller kişiye özel (`vampir/current/roles/{uid}` sadece sahibi okur); rol temizleme koleksiyon SORGUSU YAPMA (kural reddeder) — oyun dokümanındaki players listesinden uid ile sil
-- **Splash:** sinematik açılış (halka+logo+kıvılcım+harf harf başlık), min 2.6 sn (App.jsx minWait)
+- **Ev Seçimi (`/ev`, `src/pages/Houses.jsx`, `src/lib/houses.js`, koleksiyon `houses`):** WhatsApp'taki ev oylama karmaşasını çözer. Aday ev ekle (link + Cloudinary foto opsiyonel), kişi başı tepki oyu (😍/👍/😐/❌ = love/ok/meh/veto → +2/+1/0/-3). "Asla"=veto rozeti + kim veto verdiği görünür; sıralama seçilen>vetosu az>puan. Admin "🏆 Bunu seç" ile sabitler. Ekleyen ya da admin siler.
+- **Müzik Kuyruğu (`/muzik`, `src/pages/Music.jsx`, `src/lib/music.js`, koleksiyonlar `queue`/`music`/`history`):** ortak parti DJ. Herkes YouTube linki ekler (oEmbed ile başlık+kapak, API anahtarı YOK), FIFO kuyruk, now-playing=queue[0]. Tek cihaz "📻 Bu cihazda çal" ile YouTube IFrame'i EKRAN DIŞINDA (görünmez, sadece ses) çalar; oynat/duraklat/atla `music/state` ile senkron. Sıralama istemci `addedAt` (serverTimestamp pending bug'ı için). Atla=geçmişe arşivle (silme YOK), biten=dinlendi say. `history/{videoId}` playCount, `music/stats.byUser` DJ sıralaması. Geçmişten 🔁 tekrar ekle.
+- **Görünüm efektleri (Yönetim→"Görünüm & Tema", `src/lib/settings.js` `DEFAULT_SETTINGS`):** admin herkes için aç/kapatır. Şu an SADECE ❄️ kar (`Snowfall.jsx`, canvas, varsayılan açık) + 🎆 havai fişek (`Fireworks.jsx`, varsayılan kapalı — kullanıcı sevmiyor). NOT: peri ışıkları + sıcak Noel teması denendi, kullanıcı İSTEMEDİ, kaldırıldı — geri getirme.
+- **Splash:** sinematik açılış (halka+logo+kıvılcım+harf harf başlık). Zorunlu min bekleme (eski `minWait`) KALDIRILDI — splash sadece `loading` sürerken görünür (App.jsx). Geri ekleme.
 
 ## Bilinen tuzaklar
 - Firestore'da owner-only read olan koleksiyonda `getDocs` çekme → permission hatası
 - Kullanıcı bazen başka AI ile de geliştiriyor: işe başlamadan `git fetch` + remote ile senkron ol
 - Ekran görüntüleri token yakıyor; kısa ve öz çalış, gereksiz dosya okuma
 
+## Firestore koleksiyonları (rules'da match var)
+users, families, expenses, tombala(+cards), listitems, photos, vampir(+roles), wishes/messages/polls, tabu, **houses**, **queue**, **music**, **history**, settings. Efekt ayarları `settings/general`'da (yeni alan = kural değişikliği GEREKMEZ, admin zaten yazıyor).
+
 ## Bekleyen fikirler (kullanıcı onaylı sıra yok)
 - Tabu destesini 1000+ karta büyütme (zor+kaliteli kelimeler)
-- Noel teması: kırmızı-yeşil-çam ağacı (kullanıcının istediği "yeni yıl hissi" bu; havai fişek değil)
 - Menü/nöbet çizelgesi, ödeme takibi ("ödendi ✓"), aile vs aile puan tablosu, gece yarısı 00:00 kutlama animasyonu, yıldan yıla arşiv
+- Daha önce sunulan ama kullanıcının "bunlar değil" dediği fikirler: gizli hediye çekilişi, zaman kapsülü, quiz — ısrarla önerme
 - Google OAuth branding: kullanıcı "Newyear Traitors" adını ve logoyu (public/icon-512.png) Google Cloud Branding'e girdi/giriyor
