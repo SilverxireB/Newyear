@@ -19,9 +19,10 @@ export default function Music() {
   const [isPlayer, setIsPlayer] = useState(false)
   const [input, setInput] = useState('')
   const [adding, setAdding] = useState(false)
+  const [qError, setQError] = useState('')
 
   useEffect(() => {
-    const u1 = subscribeQueue(setQueue)
+    const u1 = subscribeQueue(setQueue, (e) => setQError(e?.code || e?.message || 'okuma hatası'))
     const u2 = subscribeMusicState(setState)
     return () => {
       u1()
@@ -65,6 +66,12 @@ export default function Music() {
         <h1 className="font-display text-2xl font-bold">🎵 Müzik Kuyruğu</h1>
         <p className="text-slate-400 text-sm">Herkes şarkı ekler, sırayla çalar.</p>
       </div>
+
+      {qError && (
+        <div className="card p-3 text-xs text-rose-300 bg-rose-500/10 border-rose-500/30">
+          Kuyruk okunamadı: {qError}. Firestore kurallarında “queue” için okuma izni olduğundan emin ol.
+        </div>
+      )}
 
       {/* Şarkı ekleme */}
       <div className="card p-3 flex gap-2">

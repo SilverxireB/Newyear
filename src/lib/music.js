@@ -4,18 +4,25 @@ import {
   deleteDoc,
   doc,
   onSnapshot,
-  orderBy,
-  query,
   serverTimestamp,
   setDoc,
 } from 'firebase/firestore'
 import { db } from '../firebase'
 
 // Ortak müzik kuyruğu: FIFO. Sıradaki her zaman kuyruğun ilk elemanı.
-export function subscribeQueue(cb) {
-  const q = query(collection(db, 'queue'), orderBy('createdAt', 'asc'))
-  return onSnapshot(q, (snap) =>
-    cb(snap.docs.map((d) => ({ id: d.id, ...d.data() }))),
+// Sıralama istemci tarafında yapılır (serverTimestamp pending durumunda
+// yeni kaydın anında görünmemesi sorununu önler).
+export function subscribeQueue(cb, onError) {
+  return onSnapshot(
+    collection(db, 'queue'),
+    (snap) => {
+      const items = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+      items.sort((a, b) => (a.addedAt || 0) - (b.addedAt || 0))
+      cb(items)
+    },
+    (err) => {
+      if (onError) onError(err)
+    },
   )
 }
 
@@ -27,6 +34,7 @@ export async function addToQueue({ videoId, title, thumbnail, author, uid, name 
     author: author || '',
     addedByUid: uid,
     addedByName: name || '',
+    addedAt: Date.now(), // istemci sırası (güvenilir)
     createdAt: serverTimestamp(),
   })
 }
