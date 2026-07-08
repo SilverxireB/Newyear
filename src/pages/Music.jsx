@@ -210,17 +210,28 @@ export default function Music() {
 
         {now && (
           <div className="space-y-1">
-            <input
-              type="range"
-              min={0}
-              max={curDur || 0}
-              value={Math.min(curT, curDur || 0)}
-              step="1"
-              onChange={(e) => onSeek(Number(e.target.value))}
-              disabled={!curDur}
-              className="w-full accent-gold-500 h-1.5"
-              aria-label="İlerleme"
-            />
+            <div className="relative pt-3">
+              {curDur > 0 && (
+                <span
+                  className="pointer-events-none absolute top-0 text-[11px] leading-none"
+                  style={{ left: '66.6%', transform: 'translateX(-50%)', opacity: curT / curDur >= 2 / 3 ? 1 : 0.4 }}
+                  title="Buraya gelince şarkıyı ekleyene DJ puanı yazılır"
+                >
+                  🏆
+                </span>
+              )}
+              <input
+                type="range"
+                min={0}
+                max={curDur || 0}
+                value={Math.min(curT, curDur || 0)}
+                step="1"
+                onChange={(e) => onSeek(Number(e.target.value))}
+                disabled={!curDur}
+                className="w-full accent-gold-500 h-1.5"
+                aria-label="İlerleme"
+              />
+            </div>
             <div className="flex justify-between text-[10px] text-slate-500 tabular-nums">
               <span>{fmt(curT)}</span>
               <span>{curDur ? fmt(curDur) : '–:––'}</span>
@@ -426,7 +437,23 @@ function PlayerEngine({ now, isPlaying, onEnded, onCredit, onPlay, onPause, onNe
             if (nowRef.current) e.target.loadVideoById(nowRef.current.videoId)
           },
           onStateChange: (e) => {
-            if (e.data === window.YT.PlayerState.ENDED) onEndedRef.current?.()
+            const YT = window.YT
+            if (e.data === YT.PlayerState.ENDED) {
+              onEndedRef.current?.()
+              return
+            }
+            // Arka plana düşünce tarayıcının otomatik duraklatmasını geri al
+            // (kullanıcı gerçekten duraklattıysa isPlaying zaten false olur).
+            if (e.data === YT.PlayerState.PAUSED && isPlayingRef.current) {
+              const p = playerRef.current
+              if (p && p.playVideo) {
+                try {
+                  p.playVideo()
+                } catch {
+                  // yoksay
+                }
+              }
+            }
           },
         },
       })
