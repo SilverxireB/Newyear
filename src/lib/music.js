@@ -108,6 +108,24 @@ export async function setPlaying(isPlaying) {
   await setDoc(doc(db, 'music', 'state'), { isPlaying, updatedAt: serverTimestamp() }, { merge: true })
 }
 
+// Çalan cihaz konumunu yayınlar; diğer cihazlar ilerleme çubuğunu buradan çizer.
+export async function updatePlayback({ posT, posDur, isPlaying }) {
+  await setDoc(
+    doc(db, 'music', 'state'),
+    { posT: posT || 0, posDur: posDur || 0, posAt: Date.now(), isPlaying: isPlaying !== false },
+    { merge: true },
+  )
+}
+
+// Herhangi bir cihazdan sarma isteği; çalan cihaz uygular.
+export async function requestSeek(seconds) {
+  await setDoc(
+    doc(db, 'music', 'state'),
+    { seekReq: Math.max(0, Math.floor(seconds)), seekReqAt: Date.now() },
+    { merge: true },
+  )
+}
+
 // YouTube / YouTube Music linkinden TEK şarkının video kimliğini çıkar.
 // Listedeki (list=) parametre yok sayılır → sadece o şarkı eklenir.
 const isVideoId = (x) => /^[\w-]{11}$/.test(x || '')

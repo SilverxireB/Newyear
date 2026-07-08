@@ -7,13 +7,22 @@ import {
   parseYouTube,
   recordPlay,
   removeFromQueue,
+  requestSeek,
   setPlaying,
   subscribeHistory,
   subscribeMusicState,
   subscribeQueue,
   subscribeStats,
+  updatePlayback,
 } from '../lib/music.js'
 import { useWakeLock } from '../lib/wakeLock.js'
+
+// saniye → dk:sn
+function fmt(sec) {
+  if (!sec || sec < 0 || !isFinite(sec)) return '0:00'
+  const s = Math.floor(sec)
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
+}
 
 export default function Music() {
   const { profile, user, admin } = useAuth()
@@ -26,23 +35,58 @@ export default function Music() {
   const [input, setInput] = useState('')
   const [adding, setAdding] = useState(false)
   const [qError, setQError] = useState('')
+  const [pos, setPos] = useState({ t: 0, dur: 0 }) // çalan cihazın canlı konumu
+  const [, setTick] = useState(0) // saniyede bir yeniden çiz (ilerleme çubuğu)
+  const seekRef = useRef(null)
+  const lastWriteRef = useRef(0)
 
   useEffect(() => {
     const u1 = subscribeQueue(setQueue, (e) => setQError(e?.code || e?.message || 'okuma hatası'))
     const u2 = subscribeMusicState(setState)
     const u3 = subscribeHistory(setHistory)
     const u4 = subscribeStats(setStats)
+    const clock = setInterval(() => setTick((n) => n + 1), 1000)
     return () => {
       u1()
       u2()
       u3()
       u4()
+      clearInterval(clock)
     }
   }, [])
 
   const now = queue[0] || null
   const upNext = queue.slice(1)
   const isPlaying = state.isPlaying !== false
+
+  // İlerleme: çalan cihaz kendi canlı değerini, diğerleri yayınlanan konumu (ara değerli) kullanır.
+  let curT = 0
+  let curDur = 0
+  if (isPlayer) {
+    curT = pos.t
+    curDur = pos.dur
+  } else {
+    curDur = state.posDur || 0
+    curT = state.posT || 0
+    if (isPlaying && state.posAt) curT += (Date.now() - state.posAt) / 1000
+    if (curDur) curT = Math.min(curT, curDur)
+  }
+
+  // Çalan cihazdan konum bilgisi (2 sn'de bir yayınla).
+  const onProgress = ({ t, dur }) => {
+    setPos({ t, dur })
+    const nowMs = Date.now()
+    if (nowMs - lastWriteRef.current >= 2000) {
+      lastWriteRef.current = nowMs
+      updatePlayback({ posT: t, posDur: dur, isPlaying }).catch(() => {})
+    }
+  }
+
+  const onSeek = (target) => {
+    if (isPlayer) setPos((p) => ({ ...p, t: target }))
+    if (isPlayer && seekRef.current) seekRef.current(target)
+    else requestSeek(target)
+  }
 
   const topSongs = useMemo(
     () => [...history].filter((h) => (h.playCount || 0) > 0).sort((a, b) => (b.playCount || 0) - (a.playCount || 0)).slice(0, 5),
@@ -165,9 +209,35 @@ export default function Music() {
         )}
 
         {now && (
+          <div className="space-y-1">
+            <input
+              type="range"
+              min={0}
+              max={curDur || 0}
+              value={Math.min(curT, curDur || 0)}
+              step="1"
+              onChange={(e) => onSeek(Number(e.target.value))}
+              disabled={!curDur}
+              className="w-full accent-gold-500 h-1.5"
+              aria-label="İlerleme"
+            />
+            <div className="flex justify-between text-[10px] text-slate-500 tabular-nums">
+              <span>{fmt(curT)}</span>
+              <span>{curDur ? fmt(curDur) : '–:––'}</span>
+            </div>
+          </div>
+        )}
+
+        {now && (
           <div className="flex items-center gap-2">
+            <button onClick={() => onSeek(Math.max(0, curT - 10))} disabled={!curDur} className="btn-ghost px-3 py-2.5 text-sm">
+              ⏪
+            </button>
             <button onClick={() => setPlaying(!isPlaying)} className="btn-ghost flex-1 py-2.5 text-sm">
               {isPlaying ? '⏸ Duraklat' : '▶️ Devam'}
+            </button>
+            <button onClick={() => onSeek(curT + 10)} disabled={!curDur} className="btn-ghost px-3 py-2.5 text-sm">
+              ⏩
             </button>
             <button onClick={skip} className="btn-ghost flex-1 py-2.5 text-sm">
               ⏭ Atla
@@ -191,6 +261,10 @@ export default function Music() {
             onPlay={() => setPlaying(true)}
             onPause={() => setPlaying(false)}
             onNext={() => advance(now)}
+            onProgress={onProgress}
+            seekRef={seekRef}
+            seekReq={state.seekReq}
+            seekReqAt={state.seekReqAt}
           />
         )}
       </section>
@@ -298,16 +372,18 @@ export default function Music() {
 }
 
 // YouTube ses motoru — ekran dışında, görünmez. Sadece müzik çalar.
-function PlayerEngine({ now, isPlaying, onEnded, onCredit, onPlay, onPause, onNext }) {
+function PlayerEngine({ now, isPlaying, onEnded, onCredit, onPlay, onPause, onNext, onProgress, seekRef, seekReq, seekReqAt }) {
   const hostRef = useRef(null)
   const playerRef = useRef(null)
   const currentIdRef = useRef(null)
   const creditedRef = useRef(null) // puan verilmiş kuyruk öğesinin id'si
+  const lastSeekRef = useRef(0)
   const onEndedRef = useRef(onEnded)
   const onCreditRef = useRef(onCredit)
   const onPlayRef = useRef(onPlay)
   const onPauseRef = useRef(onPause)
   const onNextRef = useRef(onNext)
+  const onProgressRef = useRef(onProgress)
   const nowRef = useRef(now)
   const isPlayingRef = useRef(isPlaying)
   onEndedRef.current = onEnded
@@ -315,6 +391,7 @@ function PlayerEngine({ now, isPlaying, onEnded, onCredit, onPlay, onPause, onNe
   onPlayRef.current = onPlay
   onPauseRef.current = onPause
   onNextRef.current = onNext
+  onProgressRef.current = onProgress
   nowRef.current = now
   isPlayingRef.current = isPlaying
 
@@ -339,6 +416,13 @@ function PlayerEngine({ now, isPlaying, onEnded, onCredit, onPlay, onPause, onNe
             } catch {
               // yoksay
             }
+            if (seekRef) seekRef.current = (sec) => {
+              try {
+                e.target.seekTo(sec, true)
+              } catch {
+                // yoksay
+              }
+            }
             if (nowRef.current) e.target.loadVideoById(nowRef.current.videoId)
           },
           onStateChange: (e) => {
@@ -349,10 +433,13 @@ function PlayerEngine({ now, isPlaying, onEnded, onCredit, onPlay, onPause, onNe
       poll = setInterval(() => {
         const p = playerRef.current
         const item = nowRef.current
-        if (!p || !p.getCurrentTime || !item || creditedRef.current === item.id) return
+        if (!p || !p.getCurrentTime || !item) return
         const dur = p.getDuration ? p.getDuration() : 0
         const t = p.getCurrentTime()
-        if (dur > 0 && t / dur >= 2 / 3) {
+        // İlerlemeyi yayınla (çubuk için).
+        onProgressRef.current?.({ t, dur })
+        // 2/3 → ekleyene puan (video başına bir kez).
+        if (creditedRef.current !== item.id && dur > 0 && t / dur >= 2 / 3) {
           creditedRef.current = item.id
           onCreditRef.current?.(item)
         }
@@ -361,6 +448,7 @@ function PlayerEngine({ now, isPlaying, onEnded, onCredit, onPlay, onPause, onNe
     return () => {
       cancelled = true
       if (poll) clearInterval(poll)
+      if (seekRef) seekRef.current = null
       try {
         playerRef.current?.destroy()
       } catch {
@@ -369,6 +457,20 @@ function PlayerEngine({ now, isPlaying, onEnded, onCredit, onPlay, onPause, onNe
       playerRef.current = null
     }
   }, [])
+
+  // Başka cihazdan gelen sarma isteğini uygula.
+  useEffect(() => {
+    if (!seekReqAt || seekReqAt === lastSeekRef.current) return
+    lastSeekRef.current = seekReqAt
+    const p = playerRef.current
+    if (p && p.seekTo && typeof seekReq === 'number') {
+      try {
+        p.seekTo(seekReq, true)
+      } catch {
+        // yoksay
+      }
+    }
+  }, [seekReqAt, seekReq])
 
   // Kuyruğun başı değişince yeni videoyu yükle.
   useEffect(() => {
