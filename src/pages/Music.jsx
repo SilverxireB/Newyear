@@ -44,8 +44,12 @@ export default function Music() {
       const meta = await fetchYouTubeMeta(videoId)
       await addToQueue({ videoId, ...meta, uid, name: profile?.name })
       setInput('')
-    } catch {
-      alert('Eklenemedi, tekrar dene.')
+    } catch (err) {
+      if (err?.code === 'permission-denied') {
+        alert('İzin hatası: Firestore kuralları henüz yayınlanmamış. Firebase Console → Rules → yapıştır → Publish yap.')
+      } else {
+        alert(`Eklenemedi: ${err?.code || err?.message || 'bilinmeyen hata'}`)
+      }
     } finally {
       setAdding(false)
     }
