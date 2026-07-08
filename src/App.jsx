@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { useAuth } from './context/AuthContext.jsx'
 import Layout from './components/Layout.jsx'
@@ -17,8 +18,15 @@ import Admin from './pages/Admin.jsx'
 export default function App() {
   const { isConfigured, loading, user, admin } = useAuth()
 
+  // Açılış animasyonu tadında izlensin diye splash en az 2.6 sn kalır.
+  const [minWait, setMinWait] = useState(true)
+  useEffect(() => {
+    const t = setTimeout(() => setMinWait(false), 2600)
+    return () => clearTimeout(t)
+  }, [])
+
   if (!isConfigured) return <SetupNeeded />
-  if (loading) return <Splash />
+  if (loading || minWait) return <Splash />
   if (!user) return <Login />
 
   return (
