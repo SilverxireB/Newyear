@@ -66,18 +66,6 @@ export default function Admin() {
             onToggle={() => setSetting('fxSnow', !settings.fxSnow)}
           />
           <FxRow
-            label="✨ Peri ışıkları"
-            desc="Üstte yanıp sönen ışık dizisi"
-            on={settings.fxLights}
-            onToggle={() => setSetting('fxLights', !settings.fxLights)}
-          />
-          <FxRow
-            label="🎄 Sıcak Noel teması"
-            desc="Çam yeşili–kırmızı arka plan tonu"
-            on={settings.fxCozy}
-            onToggle={() => setSetting('fxCozy', !settings.fxCozy)}
-          />
-          <FxRow
             label="🎆 Havai fişek"
             desc="Renkli patlamalar (opsiyonel)"
             on={settings.fxFireworks}

@@ -7,8 +7,6 @@ const SETTINGS = () => doc(db, 'settings', 'general')
 export const DEFAULT_SETTINGS = {
   tabuAdminOnly: false,
   fxSnow: true, // ❄️ kar yağışı
-  fxLights: true, // ✨ peri ışıkları
-  fxCozy: false, // 🎄 sıcak Noel teması (çam yeşili-kırmızı)
   fxFireworks: false, // 🎆 havai fişek
 }
 

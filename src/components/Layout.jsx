@@ -3,7 +3,6 @@ import { NavLink } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
 import Fireworks from './Fireworks.jsx'
 import Snowfall from './Snowfall.jsx'
-import FairyLights from './FairyLights.jsx'
 import { DEFAULT_SETTINGS, subscribeSettings } from '../lib/settings.js'
 
 const navItems = [
@@ -20,17 +19,10 @@ export default function Layout({ children }) {
 
   useEffect(() => subscribeSettings(setFx), [])
 
-  // Sıcak Noel teması: kök elemana sınıf ekleyip kaldırır.
-  useEffect(() => {
-    document.documentElement.classList.toggle('theme-cozy', !!fx.fxCozy)
-    return () => document.documentElement.classList.remove('theme-cozy')
-  }, [fx.fxCozy])
-
   return (
     <div className="min-h-[100dvh] flex flex-col">
       {fx.fxFireworks && <Fireworks />}
       {fx.fxSnow && <Snowfall />}
-      {fx.fxLights && <FairyLights />}
 
       <header className="pt-safe sticky top-0 z-20 bg-night-950/70 backdrop-blur border-b border-white/10">
         <div className="mx-auto max-w-2xl px-4 h-14 flex items-center justify-between">
