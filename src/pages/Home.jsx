@@ -95,7 +95,7 @@ export default function Home() {
       {/* Kısayollar */}
       <section className="grid grid-cols-2 gap-3">
         <ShortcutCard to="/masraf" icon="💸" title="Masraflar" sub={formatTL(settlement.total)} />
-        <ShortcutCard to="/oyunlar" icon="🎮" title="Oyunlar" sub="Tombala · Tabu · Vampir" />
+        <ShortcutCard to="/muzik" icon="🎵" title="Müzik" sub="Ortak parti listesi" />
       </section>
 
       {/* Aileler özeti */}

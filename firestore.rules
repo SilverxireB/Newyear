@@ -102,6 +102,14 @@ service cloud.firestore {
         && (resource.data.addedByUid == request.auth.uid || isAdmin());
     }
 
+    // Müzik kuyruğu: parti listesi — giriş yapan herkes okur/ekler/atlar.
+    match /queue/{id} {
+      allow read, write: if isSignedIn();
+    }
+    match /music/{docId} {
+      allow read, write: if isSignedIn();
+    }
+
     // Uygulama Genel Ayarları (Sadece admin yazabilir, herkes okur)
     match /settings/{docId} {
       allow read: if isSignedIn();
