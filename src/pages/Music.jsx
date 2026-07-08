@@ -93,7 +93,7 @@ export default function Music() {
     <div className="space-y-5">
       <div>
         <h1 className="font-display text-2xl font-bold">🎵 Müzik Kuyruğu</h1>
-        <p className="text-slate-400 text-sm">Herkes şarkı ekler, sırayla çalar (sadece müzik).</p>
+        <p className="text-slate-400 text-sm">Herkes şarkı ekler, sırayla çalar.</p>
       </div>
 
       {qError && (
@@ -215,9 +215,9 @@ export default function Music() {
       </section>
 
       {/* DJ sıralaması */}
-      {stats.length > 0 && (
-        <section className="card p-4">
-          <h2 className="font-display font-bold mb-3">🏆 DJ Sıralaması</h2>
+      <section className="card p-4">
+        <h2 className="font-display font-bold mb-3">🏆 DJ Sıralaması</h2>
+        {stats.length > 0 ? (
           <ul className="space-y-2">
             {stats.slice(0, 8).map((r, i) => (
               <li key={r.uid} className="flex items-center gap-3 text-sm">
@@ -227,8 +227,13 @@ export default function Music() {
               </li>
             ))}
           </ul>
-        </section>
-      )}
+        ) : (
+          <p className="text-slate-500 text-sm">
+            Henüz kimse yok. Bir şarkı <b>sonuna kadar</b> çalınca (atlanmadan) ekleyen kişi buraya
+            düşer — en çok dinlenen şarkıları koyan kazanır.
+          </p>
+        )}
+      </section>
 
       {/* En çok çalınanlar */}
       {topSongs.length > 0 && (
