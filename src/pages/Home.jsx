@@ -48,6 +48,19 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Ev Seçimi kısayolu */}
+      <Link
+        to="/ev"
+        className="card p-4 flex items-center gap-3 active:scale-[0.99] transition border-gold-400/30"
+      >
+        <span className="text-3xl">🏠</span>
+        <span className="flex-1">
+          <span className="block font-display font-bold text-slate-100">Ev Seçimi</span>
+          <span className="block text-xs text-slate-400">Aday evleri oyla, birlikte karar verin</span>
+        </span>
+        <span className="text-slate-500">›</span>
+      </Link>
+
       {/* Aile durumu */}
       <section className="grid grid-cols-2 gap-3">
         <div className="card p-4">

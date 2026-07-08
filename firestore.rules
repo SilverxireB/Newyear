@@ -93,6 +93,15 @@ service cloud.firestore {
       allow read, write: if isSignedIn();
     }
     
+    // Ev Seçimi: herkes okur/ekler/oy verir; kaydı ekleyen ya da yönetici silebilir.
+    match /houses/{id} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn()
+        && (resource.data.addedByUid == request.auth.uid || isAdmin());
+    }
+
     // Uygulama Genel Ayarları (Sadece admin yazabilir, herkes okur)
     match /settings/{docId} {
       allow read: if isSignedIn();
