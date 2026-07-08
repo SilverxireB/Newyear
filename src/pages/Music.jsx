@@ -71,19 +71,16 @@ export default function Music() {
     }
   }
 
-  // Atla: dinlenmiş sayılmaz, sadece geçmişe arşivlenir.
-  const skip = async () => {
-    if (!now) return
-    await recordPlay(now, false)
-    await removeFromQueue(now.id)
-  }
-
-  // Şarkı sonuna gelince: dinlendi say + geçmişe taşı, sıradakine geç.
-  const finish = async (item) => {
+  // Kuyruktan çıkar (atla ya da bitti). Skor 2/3'te ayrıca sayılır.
+  const advance = async (item) => {
     if (!item) return
-    await recordPlay(item, true)
+    await recordPlay(item, false) // geçmişe arşivle, çalma sayısına dokunma
     await removeFromQueue(item.id)
   }
+  const skip = () => advance(now)
+
+  // Şarkının 2/3'ü çalındığında ekleyene puan yaz (video başına bir kez).
+  const credit = (item) => recordPlay(item, true)
 
   const requeue = (item) => {
     add(item.videoId)
@@ -180,7 +177,7 @@ export default function Music() {
 
         {/* Gizli oynatıcı: video görünmez, sadece ses. */}
         {now && isPlayer && (
-          <PlayerEngine now={now} isPlaying={isPlaying} onEnded={() => finish(now)} />
+          <PlayerEngine now={now} isPlaying={isPlaying} onEnded={() => advance(now)} onCredit={credit} />
         )}
       </section>
 
@@ -229,8 +226,8 @@ export default function Music() {
           </ul>
         ) : (
           <p className="text-slate-500 text-sm">
-            Henüz kimse yok. Bir şarkı <b>sonuna kadar</b> çalınca (atlanmadan) ekleyen kişi buraya
-            düşer — en çok dinlenen şarkıları koyan kazanır.
+            Henüz kimse yok. Bir şarkının <b>2/3'ü çalınca</b> ekleyen kişi buraya düşer — en çok
+            dinlenen şarkıları koyan kazanır.
           </p>
         )}
       </section>
@@ -287,15 +284,24 @@ export default function Music() {
 }
 
 // YouTube ses motoru — ekran dışında, görünmez. Sadece müzik çalar.
-function PlayerEngine({ now, isPlaying, onEnded }) {
+function PlayerEngine({ now, isPlaying, onEnded, onCredit }) {
   const hostRef = useRef(null)
   const playerRef = useRef(null)
   const currentIdRef = useRef(null)
+  const creditedRef = useRef(null) // puan verilmiş kuyruk öğesinin id'si
   const onEndedRef = useRef(onEnded)
+  const onCreditRef = useRef(onCredit)
+  const nowRef = useRef(now)
+  const isPlayingRef = useRef(isPlaying)
   onEndedRef.current = onEnded
+  onCreditRef.current = onCredit
+  nowRef.current = now
+  isPlayingRef.current = isPlaying
 
+  // Oynatıcıyı bir kez oluştur + her saniye ilerlemeyi kontrol et (2/3 → puan).
   useEffect(() => {
     let cancelled = false
+    let poll
     loadYouTubeApi().then((YT) => {
       if (cancelled || !hostRef.current) return
       playerRef.current = new YT.Player(hostRef.current, {
@@ -304,22 +310,34 @@ function PlayerEngine({ now, isPlaying, onEnded }) {
         playerVars: { autoplay: 1, playsinline: 1, rel: 0 },
         events: {
           onReady: (e) => {
-            currentIdRef.current = now?.videoId || null
+            currentIdRef.current = nowRef.current?.videoId || null
             try {
               e.target.setPlaybackQuality('small')
             } catch {
               // yoksay
             }
-            if (now) e.target.loadVideoById(now.videoId)
+            if (nowRef.current) e.target.loadVideoById(nowRef.current.videoId)
           },
           onStateChange: (e) => {
             if (e.data === window.YT.PlayerState.ENDED) onEndedRef.current?.()
           },
         },
       })
+      poll = setInterval(() => {
+        const p = playerRef.current
+        const item = nowRef.current
+        if (!p || !p.getCurrentTime || !item || creditedRef.current === item.id) return
+        const dur = p.getDuration ? p.getDuration() : 0
+        const t = p.getCurrentTime()
+        if (dur > 0 && t / dur >= 2 / 3) {
+          creditedRef.current = item.id
+          onCreditRef.current?.(item)
+        }
+      }, 1000)
     })
     return () => {
       cancelled = true
+      if (poll) clearInterval(poll)
       try {
         playerRef.current?.destroy()
       } catch {
@@ -329,6 +347,7 @@ function PlayerEngine({ now, isPlaying, onEnded }) {
     }
   }, [])
 
+  // Kuyruğun başı değişince yeni videoyu yükle.
   useEffect(() => {
     const p = playerRef.current
     if (!p || !p.loadVideoById) return
@@ -345,14 +364,50 @@ function PlayerEngine({ now, isPlaying, onEnded }) {
       currentIdRef.current = now.videoId
       p.loadVideoById(now.videoId)
     }
-  }, [now?.videoId])
+  }, [now?.videoId, now?.id])
 
+  // Oynat/duraklat senkronu.
   useEffect(() => {
     const p = playerRef.current
     if (!p || !p.playVideo) return
     if (isPlaying) p.playVideo()
     else p.pauseVideo()
   }, [isPlaying, now?.videoId])
+
+  // Ekranı uyanık tut (Wake Lock) → telefon koyulunca müzik durmasın.
+  // Ayrıca sekmeye dönünce çalması gerekiyorsa devam ettir.
+  useEffect(() => {
+    let lock = null
+    const request = async () => {
+      try {
+        if ('wakeLock' in navigator) lock = await navigator.wakeLock.request('screen')
+      } catch {
+        // yoksay
+      }
+    }
+    const onVis = () => {
+      if (document.visibilityState !== 'visible') return
+      request()
+      const p = playerRef.current
+      if (p && p.playVideo && isPlayingRef.current) {
+        try {
+          p.playVideo()
+        } catch {
+          // yoksay
+        }
+      }
+    }
+    request()
+    document.addEventListener('visibilitychange', onVis)
+    return () => {
+      document.removeEventListener('visibilitychange', onVis)
+      try {
+        lock && lock.release()
+      } catch {
+        // yoksay
+      }
+    }
+  }, [])
 
   // Ekran dışında ama gerçek boyutta render → ses kesintisiz, video görünmez.
   return (
