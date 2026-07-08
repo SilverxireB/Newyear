@@ -108,21 +108,32 @@ export async function setPlaying(isPlaying) {
   await setDoc(doc(db, 'music', 'state'), { isPlaying, updatedAt: serverTimestamp() }, { merge: true })
 }
 
-// YouTube linkinden video kimliği çıkar.
+// YouTube / YouTube Music linkinden TEK şarkının video kimliğini çıkar.
+// Listedeki (list=) parametre yok sayılır → sadece o şarkı eklenir.
+const isVideoId = (x) => /^[\w-]{11}$/.test(x || '')
+
 export function parseYouTube(input) {
   if (!input) return null
   const s = input.trim()
-  if (/^[\w-]{11}$/.test(s)) return s
+  if (isVideoId(s)) return s
   try {
     const u = new URL(s)
     const host = u.hostname.replace('www.', '')
-    if (host === 'youtu.be') return u.pathname.slice(1, 12) || null
-    if (host.includes('youtube.com')) {
-      const v = u.searchParams.get('v')
-      if (v) return v.slice(0, 11)
+    // youtu.be/<id>
+    if (host === 'youtu.be') {
+      const id = u.pathname.slice(1, 12)
+      return isVideoId(id) ? id : null
+    }
+    // youtube.com, music.youtube.com, m.youtube.com → hepsi ...youtube.com
+    if (host.endsWith('youtube.com')) {
+      const v = (u.searchParams.get('v') || '').slice(0, 11)
+      if (isVideoId(v)) return v
       const parts = u.pathname.split('/').filter(Boolean)
       const i = parts.findIndex((p) => ['shorts', 'embed', 'v', 'live'].includes(p))
-      if (i >= 0 && parts[i + 1]) return parts[i + 1].slice(0, 11)
+      if (i >= 0 && parts[i + 1]) {
+        const id = parts[i + 1].slice(0, 11)
+        return isVideoId(id) ? id : null
+      }
     }
   } catch {
     // geçersiz URL

@@ -53,7 +53,7 @@ export default function Music() {
     const raw = url ?? input
     const videoId = parseYouTube(raw)
     if (!videoId) {
-      alert('Geçerli bir YouTube linki yapıştır (youtube.com veya youtu.be).')
+      alert('Tek şarkı linki yapıştır (YouTube ya da YouTube Music). Liste/playlist linki değil.')
       return
     }
     setAdding(true)
@@ -101,18 +101,23 @@ export default function Music() {
       )}
 
       {/* Şarkı ekleme */}
-      <div className="card p-3 flex gap-2">
-        <input
-          className="input py-2.5 flex-1"
-          placeholder="YouTube linki yapıştır…"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && add()}
-          inputMode="url"
-        />
-        <button onClick={() => add()} disabled={adding} className="btn-gold px-4 text-sm shrink-0">
-          {adding ? '…' : 'Ekle'}
-        </button>
+      <div className="card p-3 space-y-2">
+        <div className="flex gap-2">
+          <input
+            className="input py-2.5 flex-1"
+            placeholder="YouTube / YT Music linki yapıştır…"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && add()}
+            inputMode="url"
+          />
+          <button onClick={() => add()} disabled={adding} className="btn-gold px-4 text-sm shrink-0">
+            {adding ? '…' : 'Ekle'}
+          </button>
+        </div>
+        <p className="text-[11px] text-slate-500">
+          Tek şarkı linki ekle — liste/playlist paylaşırsan sadece o an açık olan şarkı eklenir.
+        </p>
       </div>
 
       {/* Şimdi çalıyor — müzik kartı */}
