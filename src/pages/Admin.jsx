@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
 import { ensureFamiliesSeeded, renameFamily, subscribeFamilies } from '../lib/families.js'
 import { setUserFamily, setUserRole, subscribeUsers } from '../lib/users.js'
-import { subscribeSettings, setTabuAdminOnly } from '../lib/settings.js'
+import { subscribeSettings, setTabuAdminOnly, setSetting, DEFAULT_SETTINGS } from '../lib/settings.js'
 
 export default function Admin() {
   const { user } = useAuth()
   const [families, setFamilies] = useState([])
   const [users, setUsers] = useState([])
-  const [settings, setSettings] = useState({ tabuAdminOnly: false })
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS)
 
   useEffect(() => {
     ensureFamiliesSeeded().catch(() => {})
@@ -54,6 +54,39 @@ export default function Admin() {
       </section>
 
       <section className="card p-4">
+        <h2 className="font-display font-bold mb-1">Görünüm & Tema</h2>
+        <p className="text-xs text-slate-500 mb-3">
+          Bu efektler herkeste görünür. Dilediğini aç/kapat.
+        </p>
+        <div className="space-y-2">
+          <FxRow
+            label="❄️ Kar yağışı"
+            desc="Arka planda hafif, akıcı kar"
+            on={settings.fxSnow}
+            onToggle={() => setSetting('fxSnow', !settings.fxSnow)}
+          />
+          <FxRow
+            label="✨ Peri ışıkları"
+            desc="Üstte yanıp sönen ışık dizisi"
+            on={settings.fxLights}
+            onToggle={() => setSetting('fxLights', !settings.fxLights)}
+          />
+          <FxRow
+            label="🎄 Sıcak Noel teması"
+            desc="Çam yeşili–kırmızı arka plan tonu"
+            on={settings.fxCozy}
+            onToggle={() => setSetting('fxCozy', !settings.fxCozy)}
+          />
+          <FxRow
+            label="🎆 Havai fişek"
+            desc="Renkli patlamalar (opsiyonel)"
+            on={settings.fxFireworks}
+            onToggle={() => setSetting('fxFireworks', !settings.fxFireworks)}
+          />
+        </div>
+      </section>
+
+      <section className="card p-4">
         <h2 className="font-display font-bold mb-3">Aileler</h2>
         <div className="space-y-2.5">
           {families.map((f) => (
@@ -79,6 +112,27 @@ export default function Admin() {
           )}
         </div>
       </section>
+    </div>
+  )
+}
+
+function FxRow({ label, desc, on, onToggle }) {
+  return (
+    <div className="flex items-center justify-between bg-night-900/50 border border-white/10 p-3 rounded-xl">
+      <div className="min-w-0 pr-3">
+        <div className="text-sm font-medium truncate">{label}</div>
+        <div className="text-xs text-slate-500">{desc}</div>
+      </div>
+      <button
+        onClick={onToggle}
+        className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+          on
+            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+            : 'bg-white/5 text-slate-400 border border-white/10'
+        }`}
+      >
+        {on ? 'Açık' : 'Kapalı'}
+      </button>
     </div>
   )
 }
