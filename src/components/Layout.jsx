@@ -11,6 +11,7 @@ const navItems = [
   { to: '/liste', label: 'Liste', icon: '🛒' },
   { to: '/album', label: 'Albüm', icon: '📸' },
   { to: '/oyunlar', label: 'Oyunlar', icon: '🎮' },
+  { to: '/muzik', label: 'Müzik', icon: '🎵' },
 ]
 
 export default function Layout({ children }) {
@@ -67,7 +68,7 @@ export default function Layout({ children }) {
       <main className="flex-1 mx-auto w-full max-w-2xl px-4 py-5 pb-28">{children}</main>
 
       <nav className="pb-safe fixed bottom-0 inset-x-0 z-20 bg-night-900/80 backdrop-blur border-t border-white/10">
-        <div className="mx-auto max-w-2xl px-1 grid grid-cols-5">
+        <div className="mx-auto max-w-2xl px-1 grid grid-cols-6">
           {navItems.map((item) => (
             <NavItem key={item.to} {...item} />
           ))}
@@ -83,7 +84,7 @@ function NavItem({ to, label, icon, end, className = '' }) {
       to={to}
       end={end}
       className={({ isActive }) =>
-        `flex flex-col items-center gap-0.5 py-2.5 text-xs font-medium transition ${
+        `flex flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium whitespace-nowrap transition ${
           isActive ? 'text-gold-400' : 'text-slate-400'
         } ${className}`
       }

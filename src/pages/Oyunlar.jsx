@@ -4,7 +4,6 @@ const GAMES = [
   { to: '/tombala', icon: '🎱', title: 'Tombala', sub: 'Canlı çekiliş, kartlı & bahisli' },
   { to: '/tabu', icon: '🃏', title: 'Tabu', sub: 'Anlat, tahmin ettir — takım takım' },
   { to: '/vampir', icon: '🧛', title: 'Vampir Köylü', sub: 'Gizli rol dağıtımı' },
-  { to: '/muzik', icon: '🎵', title: 'Müzik Kuyruğu', sub: 'Ortak parti listesi — herkes şarkı ekler' },
 ]
 
 export default function Oyunlar() {

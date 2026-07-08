@@ -24,31 +24,6 @@ function fmt(sec) {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
 }
 
-// Kısa, sessiz bir WAV üretir (arka planda ses oturumunu ayakta tutmak için).
-function makeSilentWavUrl() {
-  const rate = 8000
-  const n = rate // 1 sn
-  const buf = new ArrayBuffer(44 + n)
-  const v = new DataView(buf)
-  const str = (o, s) => {
-    for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i))
-  }
-  str(0, 'RIFF')
-  v.setUint32(4, 36 + n, true)
-  str(8, 'WAVE')
-  str(12, 'fmt ')
-  v.setUint32(16, 16, true)
-  v.setUint16(20, 1, true)
-  v.setUint16(22, 1, true)
-  v.setUint32(24, rate, true)
-  v.setUint32(28, rate, true)
-  v.setUint16(32, 1, true)
-  v.setUint16(34, 8, true)
-  str(36, 'data')
-  v.setUint32(40, n, true)
-  for (let i = 0; i < n; i++) v.setUint8(44 + i, 128) // 8-bit sessizlik
-  return URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }))
-}
 
 export default function Music() {
   const { profile, user, admin } = useAuth()
@@ -98,13 +73,14 @@ export default function Music() {
     if (curDur) curT = Math.min(curT, curDur)
   }
 
-  // Çalan cihazdan konum bilgisi (2 sn'de bir yayınla).
+  // Çalan cihazdan konum bilgisi (çalarken 2 sn'de bir yayınla; duraklatınca yazma).
   const onProgress = ({ t, dur }) => {
     setPos({ t, dur })
+    if (!isPlaying) return
     const nowMs = Date.now()
     if (nowMs - lastWriteRef.current >= 2000) {
       lastWriteRef.current = nowMs
-      updatePlayback({ posT: t, posDur: dur, isPlaying }).catch(() => {})
+      updatePlayback({ posT: t, posDur: dur, isPlaying: true }).catch(() => {})
     }
   }
 
@@ -308,7 +284,19 @@ export default function Music() {
 
       {/* Sırada */}
       <section className="space-y-2">
-        <h2 className="font-display font-bold text-sm text-slate-300 px-1">Sırada ({upNext.length})</h2>
+        <div className="flex items-center justify-between px-1">
+          <h2 className="font-display font-bold text-sm text-slate-300">Sırada ({upNext.length})</h2>
+          {admin && upNext.length > 0 && (
+            <button
+              onClick={() => {
+                if (confirm('Sıradaki tüm şarkıları kaldır?')) upNext.forEach((it) => removeFromQueue(it.id))
+              }}
+              className="text-xs text-rose-400/80"
+            >
+              Temizle
+            </button>
+          )}
+        </div>
         {upNext.length === 0 && <p className="text-slate-500 text-sm px-1">Sırada başka şarkı yok.</p>}
         {upNext.map((item, i) => {
           const canRemove = admin || item.addedByUid === uid
@@ -435,29 +423,6 @@ function PlayerEngine({ now, isPlaying, onEnded, onCredit, onPlay, onPause, onNe
   // Ekranı uyanık tut → çalan cihazda müzik kesilmesin.
   useWakeLock(true)
 
-  // Sessiz ses döngüsü: arka planda ses oturumunu ayakta tutar (Android'de yardımcı).
-  useEffect(() => {
-    let url
-    let audio
-    try {
-      url = makeSilentWavUrl()
-      audio = new Audio(url)
-      audio.loop = true
-      audio.volume = 1 // örnekler sessiz, ses çıkmaz
-      audio.play().catch(() => {})
-    } catch {
-      // yoksay
-    }
-    return () => {
-      try {
-        audio && audio.pause()
-      } catch {
-        // yoksay
-      }
-      if (url) URL.revokeObjectURL(url)
-    }
-  }, [])
-
   // Oynatıcıyı bir kez oluştur + her saniye ilerlemeyi kontrol et (2/3 → puan).
   useEffect(() => {
     let cancelled = false
@@ -514,6 +479,14 @@ function PlayerEngine({ now, isPlaying, onEnded, onCredit, onPlay, onPause, onNe
         const t = p.getCurrentTime()
         // İlerlemeyi yayınla (çubuk için).
         onProgressRef.current?.({ t, dur })
+        // Bildirim/kilit ekranındaki ilerleme çubuğuna gerçek konumu yaz.
+        if ('mediaSession' in navigator && navigator.mediaSession.setPositionState && dur > 0) {
+          try {
+            navigator.mediaSession.setPositionState({ duration: dur, position: Math.min(t, dur), playbackRate: 1 })
+          } catch {
+            // yoksay
+          }
+        }
         // 2/3 → ekleyene puan (video başına bir kez).
         if (creditedRef.current !== item.id && dur > 0 && t / dur >= 2 / 3) {
           creditedRef.current = item.id
