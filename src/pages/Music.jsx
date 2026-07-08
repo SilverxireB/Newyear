@@ -1,20 +1,25 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
 import {
   addToQueue,
   fetchYouTubeMeta,
   loadYouTubeApi,
   parseYouTube,
+  recordPlay,
   removeFromQueue,
   setPlaying,
+  subscribeHistory,
   subscribeMusicState,
   subscribeQueue,
+  subscribeStats,
 } from '../lib/music.js'
 
 export default function Music() {
   const { profile, user, admin } = useAuth()
   const uid = user?.uid
   const [queue, setQueue] = useState([])
+  const [history, setHistory] = useState([])
+  const [stats, setStats] = useState([])
   const [state, setState] = useState({ isPlaying: true })
   const [isPlayer, setIsPlayer] = useState(false)
   const [input, setInput] = useState('')
@@ -24,9 +29,13 @@ export default function Music() {
   useEffect(() => {
     const u1 = subscribeQueue(setQueue, (e) => setQError(e?.code || e?.message || 'okuma hatası'))
     const u2 = subscribeMusicState(setState)
+    const u3 = subscribeHistory(setHistory)
+    const u4 = subscribeStats(setStats)
     return () => {
       u1()
       u2()
+      u3()
+      u4()
     }
   }, [])
 
@@ -34,8 +43,14 @@ export default function Music() {
   const upNext = queue.slice(1)
   const isPlaying = state.isPlaying !== false
 
-  const add = async () => {
-    const videoId = parseYouTube(input)
+  const topSongs = useMemo(
+    () => [...history].filter((h) => (h.playCount || 0) > 0).sort((a, b) => (b.playCount || 0) - (a.playCount || 0)).slice(0, 5),
+    [history],
+  )
+
+  const add = async (url) => {
+    const raw = url ?? input
+    const videoId = parseYouTube(raw)
     if (!videoId) {
       alert('Geçerli bir YouTube linki yapıştır (youtube.com veya youtu.be).')
       return
@@ -56,15 +71,29 @@ export default function Music() {
     }
   }
 
-  const skip = () => {
-    if (now) removeFromQueue(now.id)
+  // Atla: dinlenmiş sayılmaz, sadece geçmişe arşivlenir.
+  const skip = async () => {
+    if (!now) return
+    await recordPlay(now, false)
+    await removeFromQueue(now.id)
+  }
+
+  // Şarkı sonuna gelince: dinlendi say + geçmişe taşı, sıradakine geç.
+  const finish = async (item) => {
+    if (!item) return
+    await recordPlay(item, true)
+    await removeFromQueue(item.id)
+  }
+
+  const requeue = (item) => {
+    add(item.videoId)
   }
 
   return (
     <div className="space-y-5">
       <div>
         <h1 className="font-display text-2xl font-bold">🎵 Müzik Kuyruğu</h1>
-        <p className="text-slate-400 text-sm">Herkes şarkı ekler, sırayla çalar.</p>
+        <p className="text-slate-400 text-sm">Herkes şarkı ekler, sırayla çalar (sadece müzik).</p>
       </div>
 
       {qError && (
@@ -83,12 +112,12 @@ export default function Music() {
           onKeyDown={(e) => e.key === 'Enter' && add()}
           inputMode="url"
         />
-        <button onClick={add} disabled={adding} className="btn-gold px-4 text-sm shrink-0">
+        <button onClick={() => add()} disabled={adding} className="btn-gold px-4 text-sm shrink-0">
           {adding ? '…' : 'Ekle'}
         </button>
       </div>
 
-      {/* Şimdi çalıyor */}
+      {/* Şimdi çalıyor — müzik kartı */}
       <section className="card p-4 space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="font-display font-bold">Şimdi çalıyor</h2>
@@ -110,53 +139,55 @@ export default function Music() {
           </div>
         )}
 
-        {now && isPlayer && (
-          <PlayerEngine now={now} isPlaying={isPlaying} onEnded={() => removeFromQueue(now.id)} />
-        )}
-
-        {now && !isPlayer && (
+        {now && (
           <div className="flex items-center gap-3">
-            {now.thumbnail && (
-              <img src={now.thumbnail} alt="" className="w-24 h-16 rounded-lg object-cover" />
-            )}
-            <div className="min-w-0">
+            <div className="relative shrink-0">
+              {now.thumbnail ? (
+                <img src={now.thumbnail} alt="" className="w-20 h-20 rounded-xl object-cover" />
+              ) : (
+                <div className="w-20 h-20 rounded-xl bg-night-900 grid place-items-center text-3xl">🎵</div>
+              )}
+              {isPlayer && isPlaying && (
+                <span className="absolute inset-0 grid place-items-center">
+                  <span className="eq"><i /><i /><i /><i /></span>
+                </span>
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
               <div className="font-medium text-sm line-clamp-2">{now.title}</div>
               <div className="text-xs text-slate-500">{now.author}</div>
+              <div className="text-[11px] text-slate-500 mt-1">Ekleyen: {now.addedByName || 'biri'}</div>
             </div>
           </div>
         )}
 
         {now && (
-          <>
-            <div className="flex items-center gap-2">
-              <button onClick={() => setPlaying(!isPlaying)} className="btn-ghost flex-1 py-2.5 text-sm">
-                {isPlaying ? '⏸ Duraklat' : '▶️ Devam'}
-              </button>
-              <button onClick={skip} className="btn-ghost flex-1 py-2.5 text-sm">
-                ⏭ Atla
-              </button>
-            </div>
-            <p className="text-[11px] text-slate-500 text-center">
-              Ekleyen: {now.addedByName || 'biri'}
-            </p>
-          </>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setPlaying(!isPlaying)} className="btn-ghost flex-1 py-2.5 text-sm">
+              {isPlaying ? '⏸ Duraklat' : '▶️ Devam'}
+            </button>
+            <button onClick={skip} className="btn-ghost flex-1 py-2.5 text-sm">
+              ⏭ Atla
+            </button>
+          </div>
         )}
 
-        {!isPlayer && now && (
+        {now && !isPlayer && (
           <p className="text-[11px] text-amber-300/80 text-center">
-            Ses çıkması için hoparlöre bağlı cihazda “Bu cihazda çal” aç.
+            Ses çıkması için hoparlöre bağlı bir cihazda “Bu cihazda çal” aç.
           </p>
+        )}
+
+        {/* Gizli oynatıcı: video görünmez, sadece ses. */}
+        {now && isPlayer && (
+          <PlayerEngine now={now} isPlaying={isPlaying} onEnded={() => finish(now)} />
         )}
       </section>
 
       {/* Sırada */}
       <section className="space-y-2">
-        <h2 className="font-display font-bold text-sm text-slate-300 px-1">
-          Sırada ({upNext.length})
-        </h2>
-        {upNext.length === 0 && (
-          <p className="text-slate-500 text-sm px-1">Sırada başka şarkı yok.</p>
-        )}
+        <h2 className="font-display font-bold text-sm text-slate-300 px-1">Sırada ({upNext.length})</h2>
+        {upNext.length === 0 && <p className="text-slate-500 text-sm px-1">Sırada başka şarkı yok.</p>}
         {upNext.map((item, i) => {
           const canRemove = admin || item.addedByUid === uid
           return (
@@ -182,11 +213,75 @@ export default function Music() {
           )
         })}
       </section>
+
+      {/* DJ sıralaması */}
+      {stats.length > 0 && (
+        <section className="card p-4">
+          <h2 className="font-display font-bold mb-3">🏆 DJ Sıralaması</h2>
+          <ul className="space-y-2">
+            {stats.slice(0, 8).map((r, i) => (
+              <li key={r.uid} className="flex items-center gap-3 text-sm">
+                <span className="w-5 text-center">{['🥇', '🥈', '🥉'][i] || i + 1}</span>
+                <span className="flex-1 truncate">{r.name}</span>
+                <span className="text-slate-400">{r.plays} dinlenme</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {/* En çok çalınanlar */}
+      {topSongs.length > 0 && (
+        <section className="card p-4">
+          <h2 className="font-display font-bold mb-3">🔥 En Çok Çalınanlar</h2>
+          <ul className="space-y-2">
+            {topSongs.map((h) => (
+              <li key={h.id} className="flex items-center gap-3">
+                {h.thumbnail && <img src={h.thumbnail} alt="" className="w-12 h-8 rounded object-cover shrink-0" />}
+                <span className="flex-1 text-sm truncate">{h.title}</span>
+                <span className="text-xs text-gold-300 shrink-0">×{h.playCount}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {/* Çalınanlar (geçmiş) — tekrar eklenebilir */}
+      {history.length > 0 && (
+        <section className="space-y-2">
+          <h2 className="font-display font-bold text-sm text-slate-300 px-1">Çalınanlar ({history.length})</h2>
+          {history.slice(0, 30).map((h) => (
+            <div key={h.id} className="card p-2.5 flex items-center gap-3">
+              {h.thumbnail && <img src={h.thumbnail} alt="" className="w-16 h-10 rounded object-cover shrink-0 opacity-80" />}
+              <div className="min-w-0 flex-1">
+                <div className="text-sm truncate">{h.title}</div>
+                <div className="text-[11px] text-slate-500 truncate">
+                  {h.playCount > 0 ? `${h.playCount} kez çalındı` : 'atlandı'} · son: {h.lastByName || 'biri'}
+                </div>
+              </div>
+              <button onClick={() => requeue(h)} className="btn-ghost px-2.5 py-1.5 text-xs shrink-0">
+                🔁 Tekrar
+              </button>
+            </div>
+          ))}
+        </section>
+      )}
+
+      <style>{`
+        .eq { display: flex; align-items: flex-end; gap: 2px; height: 18px; }
+        .eq i { width: 3px; background: #f7d066; border-radius: 2px; animation: eq 0.9s ease-in-out infinite; }
+        .eq i:nth-child(1) { animation-delay: 0s; }
+        .eq i:nth-child(2) { animation-delay: 0.2s; }
+        .eq i:nth-child(3) { animation-delay: 0.4s; }
+        .eq i:nth-child(4) { animation-delay: 0.15s; }
+        @keyframes eq { 0%, 100% { height: 5px; } 50% { height: 16px; } }
+        @media (prefers-reduced-motion: reduce) { .eq i { animation: none; height: 10px; } }
+      `}</style>
     </div>
   )
 }
 
-// YouTube çalar motoru — sadece "çalar cihaz"da render edilir.
+// YouTube ses motoru — ekran dışında, görünmez. Sadece müzik çalar.
 function PlayerEngine({ now, isPlaying, onEnded }) {
   const hostRef = useRef(null)
   const playerRef = useRef(null)
@@ -194,22 +289,26 @@ function PlayerEngine({ now, isPlaying, onEnded }) {
   const onEndedRef = useRef(onEnded)
   onEndedRef.current = onEnded
 
-  // Oynatıcıyı bir kez oluştur.
   useEffect(() => {
     let cancelled = false
     loadYouTubeApi().then((YT) => {
       if (cancelled || !hostRef.current) return
       playerRef.current = new YT.Player(hostRef.current, {
-        width: '100%',
-        height: '100%',
+        width: '320',
+        height: '180',
         playerVars: { autoplay: 1, playsinline: 1, rel: 0 },
         events: {
           onReady: (e) => {
             currentIdRef.current = now?.videoId || null
+            try {
+              e.target.setPlaybackQuality('small')
+            } catch {
+              // yoksay
+            }
             if (now) e.target.loadVideoById(now.videoId)
           },
           onStateChange: (e) => {
-            if (e.data === YT.PlayerState.ENDED) onEndedRef.current?.()
+            if (e.data === window.YT.PlayerState.ENDED) onEndedRef.current?.()
           },
         },
       })
@@ -225,7 +324,6 @@ function PlayerEngine({ now, isPlaying, onEnded }) {
     }
   }, [])
 
-  // Kuyruğun başı değişince yeni videoyu yükle.
   useEffect(() => {
     const p = playerRef.current
     if (!p || !p.loadVideoById) return
@@ -244,7 +342,6 @@ function PlayerEngine({ now, isPlaying, onEnded }) {
     }
   }, [now?.videoId])
 
-  // Oynat/duraklat senkronu.
   useEffect(() => {
     const p = playerRef.current
     if (!p || !p.playVideo) return
@@ -252,9 +349,10 @@ function PlayerEngine({ now, isPlaying, onEnded }) {
     else p.pauseVideo()
   }, [isPlaying, now?.videoId])
 
+  // Ekran dışında ama gerçek boyutta render → ses kesintisiz, video görünmez.
   return (
-    <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
-      <div ref={hostRef} className="w-full h-full" />
+    <div aria-hidden="true" style={{ position: 'fixed', left: -9999, top: 0, width: 320, height: 180, opacity: 0, pointerEvents: 'none' }}>
+      <div ref={hostRef} />
     </div>
   )
 }

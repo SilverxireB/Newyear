@@ -109,6 +109,9 @@ service cloud.firestore {
     match /music/{docId} {
       allow read, write: if isSignedIn();
     }
+    match /history/{id} {
+      allow read, write: if isSignedIn();
+    }
 
     // Uygulama Genel Ayarları (Sadece admin yazabilir, herkes okur)
     match /settings/{docId} {

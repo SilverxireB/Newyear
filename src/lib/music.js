@@ -3,6 +3,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  increment,
   onSnapshot,
   serverTimestamp,
   setDoc,
@@ -41,6 +42,59 @@ export async function addToQueue({ videoId, title, thumbnail, author, uid, name 
 
 export async function removeFromQueue(id) {
   await deleteDoc(doc(db, 'queue', id))
+}
+
+// Çalınan / atlanan şarkıyı geçmişe taşı. counted=true ise "dinlendi" sayılır
+// (çalma sayısı + ekleyene puan artar); atlamada counted=false (sadece arşiv).
+export async function recordPlay(item, counted) {
+  if (!item?.videoId) return
+  const base = {
+    videoId: item.videoId,
+    title: item.title || 'YouTube videosu',
+    thumbnail: item.thumbnail || '',
+    author: item.author || '',
+    lastByUid: item.addedByUid || null,
+    lastByName: item.addedByName || '',
+    lastPlayedAt: Date.now(),
+  }
+  if (counted) {
+    await setDoc(doc(db, 'history', item.videoId), { ...base, playCount: increment(1) }, { merge: true })
+    if (item.addedByUid) {
+      await setDoc(
+        doc(db, 'music', 'stats'),
+        { byUser: { [item.addedByUid]: { name: item.addedByName || 'biri', plays: increment(1) } } },
+        { merge: true },
+      )
+    }
+  } else {
+    // Sadece arşivle; çalma sayısına dokunma (yoksa oluştur).
+    await setDoc(doc(db, 'history', item.videoId), { ...base, playCount: increment(0) }, { merge: true })
+  }
+}
+
+// Çalınmış şarkılar (geçmiş) — en son çalınan üstte.
+export function subscribeHistory(cb, onError) {
+  return onSnapshot(
+    collection(db, 'history'),
+    (snap) => {
+      const items = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+      items.sort((a, b) => (b.lastPlayedAt || 0) - (a.lastPlayedAt || 0))
+      cb(items)
+    },
+    (err) => onError && onError(err),
+  )
+}
+
+// DJ istatistiği: kimin şarkıları kaç kez dinlenmiş.
+export function subscribeStats(cb) {
+  return onSnapshot(doc(db, 'music', 'stats'), (snap) => {
+    const by = snap.exists() ? snap.data().byUser || {} : {}
+    const rows = Object.entries(by)
+      .map(([uid, v]) => ({ uid, name: v.name || 'biri', plays: v.plays || 0 }))
+      .filter((r) => r.plays > 0)
+      .sort((a, b) => b.plays - a.plays)
+    cb(rows)
+  })
 }
 
 // Çalma durumu (oynat/duraklat) tüm cihazlarda ortak.
