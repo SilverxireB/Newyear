@@ -324,6 +324,27 @@ export default function Music() {
         })}
       </section>
 
+      {/* Çalınanlar (geçmiş) — tekrar eklenebilir */}
+      {history.length > 0 && (
+        <section className="space-y-2">
+          <h2 className="font-display font-bold text-sm text-slate-300 px-1">Çalınanlar ({history.length})</h2>
+          {history.slice(0, 30).map((h) => (
+            <div key={h.id} className="card p-2.5 flex items-center gap-3">
+              {h.thumbnail && <img src={h.thumbnail} alt="" className="w-16 h-10 rounded object-cover shrink-0 opacity-80" />}
+              <div className="min-w-0 flex-1">
+                <div className="text-sm truncate">{h.title}</div>
+                <div className="text-[11px] text-slate-500 truncate">
+                  {h.playCount > 0 ? `${h.playCount} kez çalındı` : 'atlandı'} · son: {h.lastByName || 'biri'}
+                </div>
+              </div>
+              <button onClick={() => requeue(h)} className="btn-ghost px-2.5 py-1.5 text-xs shrink-0">
+                🔁 Tekrar
+              </button>
+            </div>
+          ))}
+        </section>
+      )}
+
       {/* DJ sıralaması */}
       <section className="card p-4">
         <h2 className="font-display font-bold mb-3">🏆 DJ Sıralaması</h2>
@@ -358,27 +379,6 @@ export default function Music() {
               </li>
             ))}
           </ul>
-        </section>
-      )}
-
-      {/* Çalınanlar (geçmiş) — tekrar eklenebilir */}
-      {history.length > 0 && (
-        <section className="space-y-2">
-          <h2 className="font-display font-bold text-sm text-slate-300 px-1">Çalınanlar ({history.length})</h2>
-          {history.slice(0, 30).map((h) => (
-            <div key={h.id} className="card p-2.5 flex items-center gap-3">
-              {h.thumbnail && <img src={h.thumbnail} alt="" className="w-16 h-10 rounded object-cover shrink-0 opacity-80" />}
-              <div className="min-w-0 flex-1">
-                <div className="text-sm truncate">{h.title}</div>
-                <div className="text-[11px] text-slate-500 truncate">
-                  {h.playCount > 0 ? `${h.playCount} kez çalındı` : 'atlandı'} · son: {h.lastByName || 'biri'}
-                </div>
-              </div>
-              <button onClick={() => requeue(h)} className="btn-ghost px-2.5 py-1.5 text-xs shrink-0">
-                🔁 Tekrar
-              </button>
-            </div>
-          ))}
         </section>
       )}
 
