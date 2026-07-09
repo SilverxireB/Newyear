@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
 import { ensureFamiliesSeeded, renameFamily, subscribeFamilies } from '../lib/families.js'
-import { setUserFamily, setUserRole, subscribeUsers } from '../lib/users.js'
+import { deleteUser, setUserFamily, setUserRole, subscribeUsers } from '../lib/users.js'
 import { subscribeSettings, setTabuAdminOnly, setSetting, DEFAULT_SETTINGS } from '../lib/settings.js'
 
 export default function Admin() {
@@ -233,6 +233,18 @@ function UserRow({ user, families, currentUid, adminCount }) {
           </option>
         ))}
       </select>
+      {!isSelf && (
+        <div className="flex justify-end">
+          <button
+            onClick={() => {
+              if (confirm(`${user.name} kişisi silinsin mi? Listeden kaldırılır.`)) deleteUser(user.id)
+            }}
+            className="text-xs text-rose-400/80 hover:text-rose-400"
+          >
+            🗑️ Kişiyi sil
+          </button>
+        </div>
+      )}
     </div>
   )
 }

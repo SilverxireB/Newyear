@@ -1,5 +1,10 @@
-import { collection, doc, onSnapshot, updateDoc } from 'firebase/firestore'
+import { collection, deleteDoc, doc, onSnapshot, updateDoc } from 'firebase/firestore'
 import { db } from '../firebase'
+
+// Kullanıcıyı (profili) sil — Yönetim'den kişiyi listeden kaldırır.
+export async function deleteUser(uid) {
+  await deleteDoc(doc(db, 'users', uid))
+}
 
 // Kullanıcının ailesini ayarla (ilk giriş seçimi veya yönetici düzeltmesi).
 export async function setUserFamily(uid, familyId) {
