@@ -108,8 +108,12 @@ function MissionCard({ mission, subs, uid, admin, name }) {
       const blob = (await compressImage(file, 1600, 0.82)) || file
       const res = await uploadToCloudinary(blob)
       await addSub({ missionId: mission.id, photoUrl: res.secure_url, publicId: res.public_id, uid, name })
-    } catch {
-      alert('Yüklenemedi, tekrar dene.')
+    } catch (err) {
+      if (err?.code === 'permission-denied') {
+        alert('İzin hatası: Firestore kurallarını yayınla (missionSubs). Console → Rules → Publish.')
+      } else {
+        alert(`Yüklenemedi: ${err?.code || err?.message || 'bilinmeyen hata'}`)
+      }
     } finally {
       setUploading(false)
     }
