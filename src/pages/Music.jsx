@@ -48,6 +48,7 @@ export default function Music() {
     const u3 = subscribeHistory(setHistory)
     const u4 = subscribeStats(setStats)
     const clock = setInterval(() => setTick((n) => n + 1), 1000)
+    loadYouTubeApi() // oynatıcı hazır olsun diye önden yükle (iOS gecikmesini azaltır)
     return () => {
       u1()
       u2()
@@ -100,6 +101,16 @@ export default function Music() {
       else ctrlRef.current.pause()
     }
     setPlaying(next)
+  }
+
+  // "Bu cihazda çal" — açınca aynı zamanda çalmayı da başlatır (dokunuş içinde).
+  const togglePlayerDevice = () => {
+    const on = !isPlayer
+    setIsPlayer(on)
+    if (on) {
+      setPlaying(true)
+      if (ctrlRef.current) ctrlRef.current.play() // oynatıcı hazırsa hemen başlat
+    }
   }
 
   const topSongs = useMemo(
@@ -183,7 +194,7 @@ export default function Music() {
         <div className="flex items-center justify-between">
           <h2 className="font-display font-bold">Şimdi çalıyor</h2>
           <button
-            onClick={() => setIsPlayer((v) => !v)}
+            onClick={togglePlayerDevice}
             className={`text-xs font-bold px-2.5 py-1.5 rounded-lg border transition ${
               isPlayer
                 ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
@@ -484,6 +495,17 @@ function PlayerEngine({ now, isPlaying, onEnded, onCredit, onPlay, onPause, onNe
               },
             }
             if (nowRef.current) e.target.loadVideoById(nowRef.current.videoId)
+            // iOS ilk otomatik oynatmayı engellerse durumu 'duraklatıldı'ya çek
+            // (kullanıcı ▶️ Devam'a bir kez dokununca ses başlar).
+            setTimeout(() => {
+              const p = playerRef.current
+              if (!p || !p.getPlayerState) return
+              const st = p.getPlayerState()
+              const YT = window.YT
+              if (isPlayingRef.current && st !== YT.PlayerState.PLAYING && st !== YT.PlayerState.BUFFERING) {
+                onPauseRef.current?.()
+              }
+            }, 1500)
           },
           onStateChange: (e) => {
             const YT = window.YT
@@ -491,9 +513,9 @@ function PlayerEngine({ now, isPlaying, onEnded, onCredit, onPlay, onPause, onNe
               onEndedRef.current?.()
               return
             }
-            // Arka plana düşünce tarayıcının otomatik duraklatmasını geri al
-            // (kullanıcı gerçekten duraklattıysa isPlaying zaten false olur).
-            if (e.data === YT.PlayerState.PAUSED && isPlayingRef.current) {
+            // Yalnızca sekme ARKA PLANDAYKEN otomatik duraklamayı geri al
+            // (ön planda iOS'un engellemesiyle çakışmasın, sarma titremesin).
+            if (e.data === YT.PlayerState.PAUSED && isPlayingRef.current && document.hidden) {
               const p = playerRef.current
               if (p && p.playVideo) {
                 try {
