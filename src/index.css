@@ -16,11 +16,12 @@
   }
   /* 🎄 Yılbaşı teması: koyu çam yeşili gece + kırmızı ışıltı + çam ağacı silüetleri. */
   html.theme-noel body {
-    background-color: #06170f;
+    background-color: #0a1a11;
     background-image:
-      radial-gradient(1100px 550px at 15% -10%, rgba(22, 163, 74, 0.24), transparent 60%),
-      radial-gradient(900px 500px at 90% 0%, rgba(220, 38, 38, 0.20), transparent 55%),
-      radial-gradient(760px 520px at 50% 115%, rgba(21, 128, 61, 0.18), transparent 60%);
+      radial-gradient(900px 480px at 50% -6%, rgba(255, 184, 88, 0.18), transparent 60%),
+      radial-gradient(1050px 540px at 12% 8%, rgba(22, 163, 74, 0.26), transparent 62%),
+      radial-gradient(950px 520px at 92% 6%, rgba(220, 38, 38, 0.22), transparent 58%),
+      radial-gradient(760px 520px at 50% 116%, rgba(21, 128, 61, 0.20), transparent 60%);
   }
   /* Ekranın altında hafif çam ağacı sırası (dekoratif, içeriği engellemez). */
   html.theme-noel body::after {
