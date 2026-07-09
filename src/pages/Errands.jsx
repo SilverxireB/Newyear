@@ -24,6 +24,44 @@ const niceName = (s = '') =>
     .map((w) => w.charAt(0).toLocaleUpperCase('tr') + w.slice(1).toLocaleLowerCase('tr'))
     .join(' ')
 
+// İsteğe göre sade ikon (bulamazsa 🛎️).
+const ICONS = [
+  [['su'], '💧'],
+  [['çay'], '🍵'],
+  [['kahve', 'nescafe'], '☕'],
+  [['buz'], '🧊'],
+  [['peçete', 'havlu', 'mendil'], '🧻'],
+  [['çatal'], '🍴'],
+  [['kaşık'], '🥄'],
+  [['bıçak'], '🔪'],
+  [['tabak'], '🍽️'],
+  [['kola', 'gazoz', 'soda', 'meşrubat', 'fanta', 'sprite'], '🥤'],
+  [['ayran', 'süt', 'yoğurt'], '🥛'],
+  [['bardak'], '🥛'],
+  [['ekmek'], '🍞'],
+  [['tuz'], '🧂'],
+  [['biber'], '🌶️'],
+  [['şeker'], '🍬'],
+  [['limon'], '🍋'],
+  [['meyve', 'elma'], '🍎'],
+  [['cips'], '🍟'],
+  [['çerez', 'kuruyemiş', 'fıstık', 'fındık', 'leblebi'], '🥜'],
+  [['meze', 'zeytin'], '🫒'],
+  [['sigara'], '🚬'],
+  [['çakmak'], '🔥'],
+  [['çöp'], '🗑️'],
+  [['şarap'], '🍷'],
+  [['bira'], '🍺'],
+  [['rakı', 'viski', 'votka'], '🥃'],
+  [['kadeh', 'şampanya'], '🥂'],
+]
+
+const itemIcon = (item = '') => {
+  const s = item.toLocaleLowerCase('tr')
+  for (const [keys, ic] of ICONS) if (keys.some((k) => s.includes(k))) return ic
+  return '🛎️'
+}
+
 export default function Errands() {
   const { profile, user, admin } = useAuth()
   const uid = user?.uid
@@ -96,7 +134,7 @@ export default function Errands() {
               onClick={() => ask(q)}
               className="px-3 py-1.5 rounded-full text-xs bg-white/5 border border-white/10 text-slate-200 active:scale-95"
             >
-              + {q}
+              {itemIcon(q)} {q}
             </button>
           ))}
         </div>
@@ -114,7 +152,7 @@ export default function Errands() {
           return (
             <div key={e.id} className="card p-3 space-y-2">
               <div className="flex items-start gap-2">
-                <span className="text-2xl leading-none">🍽️</span>
+                <span className="text-2xl leading-none">{itemIcon(e.item)}</span>
                 <div className="min-w-0 flex-1">
                   <div className="text-lg font-bold leading-tight">{capTr(e.item)}</div>
                   <div className="text-xs text-slate-400">
