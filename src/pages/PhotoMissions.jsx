@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
-import { compressImage, isCloudinaryConfigured, uploadToCloudinary } from '../cloudinary.js'
+import { isCloudinaryConfigured, uploadToCloudinary } from '../cloudinary.js'
 import {
   addMission,
   addSub,
@@ -105,14 +105,14 @@ function MissionCard({ mission, subs, uid, admin, name }) {
     if (!file) return
     setUploading(true)
     try {
-      const blob = (await compressImage(file, 1600, 0.82)) || file
-      const res = await uploadToCloudinary(blob)
+      // Albüm ile aynı (çalıştığı kanıtlanmış) yol: ham dosyayı doğrudan yükle.
+      const res = await uploadToCloudinary(file)
       await addSub({ missionId: mission.id, photoUrl: res.secure_url, publicId: res.public_id, uid, name })
     } catch (err) {
       if (err?.code === 'permission-denied') {
         alert('İzin hatası: Firestore kurallarını yayınla (missionSubs). Console → Rules → Publish.')
       } else {
-        alert(`Yüklenemedi: ${err?.code || err?.message || 'bilinmeyen hata'}`)
+        alert(`Yüklenemedi: ${err?.message || err?.code || 'bağlantı hatası, tekrar dene'}`)
       }
     } finally {
       setUploading(false)
