@@ -74,6 +74,12 @@ export default function Home() {
         <span className="text-slate-500">›</span>
       </Link>
 
+      {/* Parti kısayolları */}
+      <section className="grid grid-cols-2 gap-3">
+        <ShortcutCard to="/oduller" icon="🏆" title="Ödüller" sub="Gecenin ödülleri" />
+        <ShortcutCard to="/gorevler" icon="📸" title="Foto Görev" sub="Challenge & oyla" />
+      </section>
+
       {/* Aile durumu */}
       <section className="grid grid-cols-2 gap-3">
         <div className="card p-4">
