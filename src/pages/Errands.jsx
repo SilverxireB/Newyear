@@ -5,12 +5,24 @@ import {
   bringErrand,
   kindnessBoard,
   removeErrand,
+  requestBoard,
   servedCount,
   subscribeErrands,
   toggleAlsoWant,
 } from '../lib/errands.js'
 
 const QUICK = ['su', 'çay', 'kahve', 'buz', 'peçete', 'çatal', 'tabak', 'kola']
+
+// İlk harfi büyük (Türkçe: i→İ).
+const capTr = (s = '') => (s ? s.charAt(0).toLocaleUpperCase('tr') + s.slice(1) : s)
+
+// İsimleri düzgün biçime çevir: "DOĞAN BAHARÖZÜ" → "Doğan Baharözü".
+const niceName = (s = '') =>
+  s
+    .split(' ')
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toLocaleUpperCase('tr') + w.slice(1).toLocaleLowerCase('tr'))
+    .join(' ')
 
 export default function Errands() {
   const { profile, user, admin } = useAuth()
@@ -33,6 +45,7 @@ export default function Errands() {
     [errands],
   )
   const board = useMemo(() => kindnessBoard(errands), [errands])
+  const askers = useMemo(() => requestBoard(errands), [errands])
 
   const ask = async (text) => {
     const item = (text ?? input).trim()
@@ -103,10 +116,10 @@ export default function Errands() {
               <div className="flex items-start gap-2">
                 <span className="text-2xl leading-none">🍽️</span>
                 <div className="min-w-0 flex-1">
-                  <div className="font-semibold">{e.item}</div>
-                  <div className="text-[11px] text-slate-500">
-                    İsteyen: {e.byName}
-                    {also.length > 0 && ` · +${also.length} kişi (${also.map(([, n]) => n).join(', ')})`}
+                  <div className="text-lg font-bold leading-tight">{capTr(e.item)}</div>
+                  <div className="text-xs text-slate-400">
+                    İsteyen: {niceName(e.byName)}
+                    {also.length > 0 && ` · +${also.length} kişi (${also.map(([, n]) => niceName(n)).join(', ')})`}
                   </div>
                 </div>
                 {(mine || admin) && (
@@ -146,13 +159,14 @@ export default function Errands() {
 
       {/* İyilik puanı sıralaması */}
       <section className="card p-4">
-        <h2 className="font-display font-bold mb-3">🏅 İyilik Puanı</h2>
+        <h2 className="font-display font-bold mb-1">🏅 İyilik Puanı</h2>
+        <p className="text-xs text-slate-500 mb-3">En çok koşturan (getiren)</p>
         {board.length > 0 ? (
           <ul className="space-y-2">
             {board.slice(0, 8).map((r, i) => (
               <li key={r.uid} className="flex items-center gap-3 text-sm">
                 <span className="w-5 text-center">{['🥇', '🥈', '🥉'][i] || i + 1}</span>
-                <span className="flex-1 truncate">{r.name}</span>
+                <span className="flex-1 truncate">{niceName(r.name)}</span>
                 <span className="text-gold-300 font-semibold">{r.points}</span>
                 <span className="text-[11px] text-slate-500">({r.trips} sefer)</span>
               </li>
@@ -165,6 +179,23 @@ export default function Errands() {
         )}
       </section>
 
+      {/* En çok isteyen */}
+      {askers.length > 0 && (
+        <section className="card p-4">
+          <h2 className="font-display font-bold mb-1">🛎️ En Çok İsteyen</h2>
+          <p className="text-xs text-slate-500 mb-3">En çok hizmet ettiren 😄</p>
+          <ul className="space-y-2">
+            {askers.slice(0, 8).map((r, i) => (
+              <li key={r.uid} className="flex items-center gap-3 text-sm">
+                <span className="w-5 text-center">{['👑', '🥈', '🥉'][i] || i + 1}</span>
+                <span className="flex-1 truncate">{niceName(r.name)}</span>
+                <span className="text-slate-300 font-semibold">{r.count} istek</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {/* Geçmiş */}
       {done.length > 0 && (
         <section className="space-y-2">
@@ -173,9 +204,9 @@ export default function Errands() {
             <div key={e.id} className="card p-2.5 flex items-center gap-3">
               <span className="text-lg">✅</span>
               <div className="min-w-0 flex-1">
-                <div className="text-sm truncate">{e.item}</div>
-                <div className="text-[11px] text-slate-500 truncate">
-                  {e.broughtByName} getirdi{servedCount(e) > 1 ? ` · ${servedCount(e)} kişiye` : ''}
+                <div className="text-sm font-medium truncate">{capTr(e.item)}</div>
+                <div className="text-xs text-slate-400 truncate">
+                  {niceName(e.broughtByName)} getirdi{servedCount(e) > 1 ? ` · ${servedCount(e)} kişiye` : ''}
                 </div>
               </div>
               {admin && (

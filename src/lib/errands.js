@@ -69,3 +69,15 @@ export function kindnessBoard(errands) {
   }
   return Object.values(by).sort((a, b) => b.points - a.points)
 }
+
+// En çok isteyen sıralaması: kim kaç kez bir şey istetti (kim hizmet ettirdi).
+export function requestBoard(errands) {
+  const by = {}
+  for (const e of errands) {
+    if (!e.byUid) continue
+    const k = e.byUid
+    if (!by[k]) by[k] = { uid: k, name: e.byName || 'biri', count: 0 }
+    by[k].count += 1
+  }
+  return Object.values(by).sort((a, b) => b.count - a.count)
+}
