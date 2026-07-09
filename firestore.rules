@@ -113,12 +113,16 @@ service cloud.firestore {
       allow read, write: if isSignedIn();
     }
 
-    // Mutfaktan Getir: herkes okur/ekler/getirir; isteyen ya da yönetici siler.
+    // Mutfaktan Getir: herkes okur/ekler/getirir.
+    // Silme: yönetici her şeyi; normal kullanıcı yalnızca KENDİ AÇIK isteğini
+    // iptal edebilir. Getirilen (done) kayıtları yalnızca yönetici silebilir.
     match /errands/{id} {
       allow read: if isSignedIn();
       allow create, update: if isSignedIn();
-      allow delete: if isSignedIn()
-        && (resource.data.byUid == request.auth.uid || isAdmin());
+      allow delete: if isSignedIn() && (
+        isAdmin() ||
+        (resource.data.byUid == request.auth.uid && resource.data.status == 'open')
+      );
     }
 
     // Uygulama Genel Ayarları (Sadece admin yazabilir, herkes okur)
