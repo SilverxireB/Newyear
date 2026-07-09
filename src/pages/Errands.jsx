@@ -11,7 +11,11 @@ import {
   toggleAlsoWant,
 } from '../lib/errands.js'
 
-const QUICK = ['su', 'çay', 'kahve', 'buz', 'peçete', 'çatal', 'tabak', 'kola']
+const QUICK = [
+  'su', 'çay', 'kahve', 'kola', 'ayran', 'süt', 'buz', 'bardak',
+  'peçete', 'çatal', 'kaşık', 'tabak', 'ekmek', 'meze', 'çerez', 'cips',
+  'meyve', 'şarap', 'bira', 'rakı',
+]
 
 // İlk harfi büyük (Türkçe: i→İ).
 const capTr = (s = '') => (s ? s.charAt(0).toLocaleUpperCase('tr') + s.slice(1) : s)
