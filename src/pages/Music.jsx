@@ -39,6 +39,7 @@ export default function Music() {
   const [pos, setPos] = useState({ t: 0, dur: 0 }) // çalan cihazın canlı konumu
   const [, setTick] = useState(0) // saniyede bir yeniden çiz (ilerleme çubuğu)
   const seekRef = useRef(null)
+  const ctrlRef = useRef(null) // çalan oynatıcıyı doğrudan kontrol (iOS ses için gerekli)
   const lastWriteRef = useRef(0)
 
   useEffect(() => {
@@ -88,6 +89,17 @@ export default function Music() {
     if (isPlayer) setPos((p) => ({ ...p, t: target }))
     if (isPlayer && seekRef.current) seekRef.current(target)
     else requestSeek(target)
+  }
+
+  // Oynat/duraklat. Çalar cihazda oynatıcıyı DOĞRUDAN (dokunuş içinde) tetikler
+  // — iOS'ta sesin başlaması için şart.
+  const togglePlay = () => {
+    const next = !isPlaying
+    if (isPlayer && ctrlRef.current) {
+      if (next) ctrlRef.current.play()
+      else ctrlRef.current.pause()
+    }
+    setPlaying(next)
   }
 
   const topSongs = useMemo(
@@ -246,7 +258,7 @@ export default function Music() {
             <button onClick={() => onSeek(Math.max(0, curT - 10))} disabled={!curDur} className="btn-ghost px-3 py-2.5 text-sm">
               ⏪
             </button>
-            <button onClick={() => setPlaying(!isPlaying)} className="btn-ghost flex-1 py-2.5 text-sm">
+            <button onClick={togglePlay} className="btn-ghost flex-1 py-2.5 text-sm">
               {isPlaying ? '⏸ Duraklat' : '▶️ Devam'}
             </button>
             <button onClick={() => onSeek(curT + 10)} disabled={!curDur} className="btn-ghost px-3 py-2.5 text-sm">
@@ -264,6 +276,12 @@ export default function Music() {
           </p>
         )}
 
+        {now && isPlayer && (
+          <p className="text-[11px] text-slate-500 text-center">
+            iPhone'da ses gelmezse bir kez <b>▶️ Devam</b>'a dokun (Safari sesi ilk dokunuşla başlatır).
+          </p>
+        )}
+
         {/* Gizli oynatıcı: video görünmez, sadece ses. */}
         {now && isPlayer && (
           <PlayerEngine
@@ -276,6 +294,7 @@ export default function Music() {
             onNext={() => advance(now)}
             onProgress={onProgress}
             seekRef={seekRef}
+            ctrlRef={ctrlRef}
             seekReq={state.seekReq}
             seekReqAt={state.seekReqAt}
           />
@@ -397,7 +416,7 @@ export default function Music() {
 }
 
 // YouTube ses motoru — ekran dışında, görünmez. Sadece müzik çalar.
-function PlayerEngine({ now, isPlaying, onEnded, onCredit, onPlay, onPause, onNext, onProgress, seekRef, seekReq, seekReqAt }) {
+function PlayerEngine({ now, isPlaying, onEnded, onCredit, onPlay, onPause, onNext, onProgress, seekRef, ctrlRef, seekReq, seekReqAt }) {
   const hostRef = useRef(null)
   const playerRef = useRef(null)
   const currentIdRef = useRef(null)
@@ -447,6 +466,22 @@ function PlayerEngine({ now, isPlaying, onEnded, onCredit, onPlay, onPause, onNe
               } catch {
                 // yoksay
               }
+            }
+            if (ctrlRef) ctrlRef.current = {
+              play: () => {
+                try {
+                  e.target.playVideo()
+                } catch {
+                  // yoksay
+                }
+              },
+              pause: () => {
+                try {
+                  e.target.pauseVideo()
+                } catch {
+                  // yoksay
+                }
+              },
             }
             if (nowRef.current) e.target.loadVideoById(nowRef.current.videoId)
           },
@@ -498,6 +533,7 @@ function PlayerEngine({ now, isPlaying, onEnded, onCredit, onPlay, onPause, onNe
       cancelled = true
       if (poll) clearInterval(poll)
       if (seekRef) seekRef.current = null
+      if (ctrlRef) ctrlRef.current = null
       try {
         playerRef.current?.destroy()
       } catch {
