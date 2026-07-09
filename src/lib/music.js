@@ -2,11 +2,13 @@ import {
   addDoc,
   collection,
   deleteDoc,
+  deleteField,
   doc,
   increment,
   onSnapshot,
   serverTimestamp,
   setDoc,
+  updateDoc,
 } from 'firebase/firestore'
 import { db } from '../firebase'
 
@@ -124,6 +126,30 @@ export async function requestSeek(seconds) {
     { seekReq: Math.max(0, Math.floor(seconds)), seekReqAt: Date.now() },
     { merge: true },
   )
+}
+
+// Atla oyu: izleyicilerin şarkıyı atlaması için gereken oy sayısı.
+export const SKIP_THRESHOLD = 3
+
+export async function toggleSkipVote(songId, uid, isVoted) {
+  await setDoc(
+    doc(db, 'music', 'state'),
+    { skipVotes: { [songId]: { [uid]: isVoted ? deleteField() : true } } },
+    { merge: true },
+  )
+}
+
+export async function clearSkipVotes() {
+  try {
+    await updateDoc(doc(db, 'music', 'state'), { skipVotes: {} })
+  } catch {
+    // belge yoksa yoksay
+  }
+}
+
+export function skipVoteCount(state, songId) {
+  if (!state || !songId) return 0
+  return Object.keys((state.skipVotes && state.skipVotes[songId]) || {}).length
 }
 
 // YouTube / YouTube Music linkinden TEK şarkının video kimliğini çıkar.

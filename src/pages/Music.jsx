@@ -9,10 +9,14 @@ import {
   removeFromQueue,
   requestSeek,
   setPlaying,
+  SKIP_THRESHOLD,
+  clearSkipVotes,
+  skipVoteCount,
   subscribeHistory,
   subscribeMusicState,
   subscribeQueue,
   subscribeStats,
+  toggleSkipVote,
   updatePlayback,
 } from '../lib/music.js'
 import { useWakeLock } from '../lib/wakeLock.js'
@@ -146,8 +150,23 @@ export default function Music() {
     if (!item) return
     await recordPlay(item, false) // geçmişe arşivle, çalma sayısına dokunma
     await removeFromQueue(item.id)
+    clearSkipVotes().catch(() => {})
   }
-  const skip = () => advance(now)
+
+  // Atla: host/admin/kendi şarkın serbest; diğer izleyiciler için 3 oy gerekir.
+  const canForceSkip = now && (isPlayer || admin || now.addedByUid === uid)
+  const skipVotes = skipVoteCount(state, now?.id)
+  const iVotedSkip = !!(now && state.skipVotes?.[now.id]?.[uid])
+
+  const skip = () => {
+    if (!now) return
+    if (canForceSkip) {
+      advance(now)
+      return
+    }
+    toggleSkipVote(now.id, uid, iVotedSkip)
+    if (!iVotedSkip && skipVotes + 1 >= SKIP_THRESHOLD) advance(now)
+  }
 
   // Şarkının 2/3'ü çalındığında ekleyene puan yaz (video başına bir kez).
   const credit = (item) => recordPlay(item, true)
@@ -275,8 +294,11 @@ export default function Music() {
             <button onClick={() => onSeek(curT + 10)} disabled={!curDur} className="btn-ghost px-3 py-2.5 text-sm">
               ⏩
             </button>
-            <button onClick={skip} className="btn-ghost flex-1 py-2.5 text-sm">
-              ⏭ Atla
+            <button
+              onClick={skip}
+              className={`btn-ghost flex-1 py-2.5 text-sm ${iVotedSkip ? 'text-gold-300' : ''}`}
+            >
+              {canForceSkip ? '⏭ Atla' : `⏭ Atla (${skipVotes}/${SKIP_THRESHOLD})`}
             </button>
           </div>
         )}
