@@ -14,7 +14,7 @@ import {
 const QUICK = [
   'su', 'çay', 'kahve', 'kola', 'ayran', 'süt', 'buz', 'bardak',
   'peçete', 'çatal', 'kaşık', 'tabak', 'ekmek', 'meze', 'çerez', 'cips',
-  'meyve', 'şarap', 'bira', 'rakı',
+  'meyve', 'şarap', 'bira', 'rakı', 'kokteyl',
 ]
 
 // İlk harfi büyük (Türkçe: i→İ).
@@ -57,6 +57,7 @@ const ICONS = [
   [['şarap'], '🍷'],
   [['bira'], '🍺'],
   [['rakı', 'viski', 'votka'], '🥃'],
+  [['kokteyl', 'kokteyil', 'mojito', 'margarita'], '🍸'],
   [['kadeh', 'şampanya'], '🥂'],
 ]
 
