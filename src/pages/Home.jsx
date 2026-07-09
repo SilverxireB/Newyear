@@ -61,6 +61,19 @@ export default function Home() {
         <span className="text-slate-500">›</span>
       </Link>
 
+      {/* Mutfaktan Getir kısayolu */}
+      <Link
+        to="/getir"
+        className="card p-4 flex items-center gap-3 active:scale-[0.99] transition"
+      >
+        <span className="text-3xl">🙋</span>
+        <span className="flex-1">
+          <span className="block font-display font-bold text-slate-100">Mutfaktan Getir</span>
+          <span className="block text-xs text-slate-400">Bir şey iste; getiren iyilik puanı kapar</span>
+        </span>
+        <span className="text-slate-500">›</span>
+      </Link>
+
       {/* Aile durumu */}
       <section className="grid grid-cols-2 gap-3">
         <div className="card p-4">

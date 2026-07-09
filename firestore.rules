@@ -113,6 +113,14 @@ service cloud.firestore {
       allow read, write: if isSignedIn();
     }
 
+    // Mutfaktan Getir: herkes okur/ekler/getirir; isteyen ya da yönetici siler.
+    match /errands/{id} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn();
+      allow delete: if isSignedIn()
+        && (resource.data.byUid == request.auth.uid || isAdmin());
+    }
+
     // Uygulama Genel Ayarları (Sadece admin yazabilir, herkes okur)
     match /settings/{docId} {
       allow read: if isSignedIn();

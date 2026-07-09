@@ -7,6 +7,7 @@ import Login from './pages/Login.jsx'
 import Home from './pages/Home.jsx'
 import Houses from './pages/Houses.jsx'
 import Music from './pages/Music.jsx'
+import Errands from './pages/Errands.jsx'
 import Expenses from './pages/Expenses.jsx'
 import Liste from './pages/Liste.jsx'
 import Album from './pages/Album.jsx'
@@ -30,6 +31,7 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/ev" element={<Houses />} />
         <Route path="/muzik" element={<Music />} />
+        <Route path="/getir" element={<Errands />} />
         <Route path="/masraf" element={<Expenses />} />
         <Route path="/liste" element={<Liste />} />
         <Route path="/album" element={<Album />} />
