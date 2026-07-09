@@ -56,8 +56,24 @@ export default function Admin() {
       <section className="card p-4">
         <h2 className="font-display font-bold mb-1">Görünüm & Tema</h2>
         <p className="text-xs text-slate-500 mb-3">
-          Bu efektler herkeste görünür. Dilediğini aç/kapat.
+          Seçim herkeste anında geçerli olur.
         </p>
+
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          <ThemeBtn
+            active={settings.theme !== 'noel'}
+            onClick={() => setSetting('theme', 'default')}
+            title="🌌 Gece"
+            desc="Varsayılan (altın)"
+          />
+          <ThemeBtn
+            active={settings.theme === 'noel'}
+            onClick={() => setSetting('theme', 'noel')}
+            title="🎄 Yılbaşı"
+            desc="Yeşil-kırmızı-çam"
+          />
+        </div>
+
         <div className="space-y-2">
           <FxRow
             label="❄️ Kar yağışı"
@@ -101,6 +117,23 @@ export default function Admin() {
         </div>
       </section>
     </div>
+  )
+}
+
+function ThemeBtn({ active, onClick, title, desc }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`p-3 rounded-xl border text-left transition ${
+        active
+          ? 'bg-gold-500/15 border-gold-400/50'
+          : 'bg-night-900/50 border-white/10'
+      }`}
+    >
+      <div className="text-sm font-bold">{title}</div>
+      <div className="text-[11px] text-slate-400">{desc}</div>
+      {active && <div className="text-[10px] text-gold-300 mt-1">● seçili</div>}
+    </button>
   )
 }
 

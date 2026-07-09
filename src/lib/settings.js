@@ -8,6 +8,7 @@ export const DEFAULT_SETTINGS = {
   tabuAdminOnly: false,
   fxSnow: true, // ❄️ kar yağışı
   fxFireworks: false, // 🎆 havai fişek
+  theme: 'default', // 'default' (gece) | 'noel' (yeşil-kırmızı-çam)
 }
 
 export function subscribeSettings(cb) {

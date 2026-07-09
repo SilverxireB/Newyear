@@ -20,6 +20,12 @@ export default function Layout({ children }) {
 
   useEffect(() => subscribeSettings(setFx), [])
 
+  // Yılbaşı teması: kök elemana sınıf ekleyip kaldırır (herkeste canlı).
+  useEffect(() => {
+    document.documentElement.classList.toggle('theme-noel', fx.theme === 'noel')
+    return () => document.documentElement.classList.remove('theme-noel')
+  }, [fx.theme])
+
   return (
     <div className="min-h-[100dvh] flex flex-col">
       {fx.fxFireworks && <Fireworks />}
